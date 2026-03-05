@@ -1,0 +1,34 @@
+# === ROS2 Build artifacts ===
+build/
+install/
+log/
+*.pyc
+__pycache__/
+*.egg-info/
+
+# === CoppeliaSim ===
+# Backups de escenas
+*.ttt~
+# Logs de CoppeliaSim
+coppeliaSim_log.txt
+
+# === IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === Python ===
+*.pyc
+*.pyo
+.env
+venv/
+.venv/
+
+# === Symlinks creados por symlink_pkg.sh ===
+# (no ignorar: queremos trackear que existen)
