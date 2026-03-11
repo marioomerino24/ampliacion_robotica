@@ -11,27 +11,22 @@ find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 
 # Executables
 
-add_executable(nav_p2p src/nav_p2p.cpp)
-ament_target_dependencies(nav_p2p 
-  rclcpp 
-  geometry_msgs 
-  nav_msgs
-)
 
 add_executable(corr_nav src/corr_nav.cpp)
-ament_target_dependencies(corr_nav 
-  rclcpp 
-  geometry_msgs 
+ament_target_dependencies(corr_nav
+  rclcpp
+  geometry_msgs
   nav_msgs
   sensor_msgs
+  std_srvs
 )
 
 # Install executables
 install(TARGETS
-  nav_p2p
   corr_nav
   DESTINATION lib/${PROJECT_NAME}
 )

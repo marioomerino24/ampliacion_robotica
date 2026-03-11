@@ -134,9 +134,12 @@ private:
             }
         }
 
+        dist_front_ = averageRangeInWindow(msg, 0.0, 5.0);
+        dist_right_ahead_ = averageRangeInWindow(msg, -M_PI/4, 5.0);  // -45° anticipación curva
+
         measured_data_=true;
 
-        RCLCPP_INFO(this->get_logger(), "Left=%.2f m, Right=%.2f m", dist_left_, dist_right_);
+        RCLCPP_INFO(this->get_logger(), "Left=%.2f m, Right=%.2f m, Front=%.2f m, RightAhead=%.2f m", dist_left_, dist_right_, dist_front_, dist_right_ahead_);
     }
 
     void controlLoop()
@@ -155,8 +158,25 @@ private:
 
             /////////////////// PUT YOUR CONTROL CODE HERE ///////////
 
+            double lateral_error = dist_left_ - (corridor_width_ / 2.0);
+            double y_L;
+            double L;
+            double linear_velocity;
+            double angular_velocity;
 
-
+            if (dist_right_ > corridor_width_ || dist_right_ahead_ > corridor_width_) {
+                // Curve right detected (anticipada a -45°)
+                linear_velocity  = max_linear_speed_ / 8.0;  // Avance lento sin parar
+                angular_velocity = -max_angular_speed_;       // Giro máximo a la derecha
+                RCLCPP_INFO(this->get_logger(), "CURVA: v=%.2f w=%.2f", linear_velocity, angular_velocity);
+            } else {
+                // Normal corridor following (Pure Pursuit)
+                y_L = lateral_error * std::cos(theta) - look_ahead_distance_ * std::sin(theta);
+                L = look_ahead_distance_;
+                double curvature = 2.0 * y_L / (L * L);
+                linear_velocity  = max_linear_speed_ / 4.0;
+                angular_velocity = std::max(-max_angular_speed_, std::min(max_angular_speed_, curvature * linear_velocity));
+            }
 
 
 
@@ -191,9 +211,12 @@ private:
     // Laser data
     double dist_left_;
     double dist_right_;
+    double dist_front_ = std::numeric_limits<double>::infinity();
+    double dist_right_ahead_ = std::numeric_limits<double>::infinity();  // -45° right
     double theta_sign_ = 1.0; // +1 if facing left wall, -1 if facing right wall
     double measured_data_=false;
     sensor_msgs::msg::LaserScan::SharedPtr last_scan_;
+
 };  
 
 int main(int argc, char * argv[])

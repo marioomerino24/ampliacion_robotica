@@ -1,0 +1,57 @@
+================================================================================
+AMPLIACIÓN DE ROBÓTICA - LAB-MR 1-II: SEGUIMIENTO DE CAMINOS IMPLÍCITOS
+Resumen de Desarrollo - Navegación por Pasillo (Corridor Following)
+================================================================================
+
+PUNTO DE PARTIDA:
+- Archivo corr_nav.cpp incompleto con método controlLoop() vacío
+- PDF del enunciado especificando seguimiento de pasillo con láser
+- Robot Pioneer P3DX con drive diferencial (2K=0.331m, R=0.097518m)
+- Comunicación ROS2 (Humble) con CoppeliaSim mediante Twist
+- Sensor láser para medir distancias a paredes del pasillo
+
+QUÉ HACÍA FALTA:
+1. Procesar datos del láser para obtener distancias laterales (izq/der)
+2. Determinar la orientación del robot respecto al pasillo (theta)
+3. Implementar control reactivo para centrar el robot en el pasillo
+4. Detectar curvas anticipadamente usando lecturas a -45°
+5. Implementar Pure Pursuit para el seguimiento en tramos rectos
+6. Eliminar código de la práctica no usado (nav_p2p no pertenece aquí)
+7. Ajustar parámetros de pasillo y look-ahead distance
+
+QUÉ HEMOS HECHO:
+1. Implementado averageRangeInWindow() para promediar lecturas láser en ventanas angulares
+2. Procesamiento láser en laserCallback(): distancias laterales (±90°), frontal (0°) y anticipación (-45°)
+3. Estimación del signo de orientación (theta_sign_) comparando lecturas a ±15° de las paredes
+4. Cálculo de theta mediante acos(ancho_pasillo / distancia_lateral_total)
+5. Control Pure Pursuit en tramos rectos: y_L, curvatura = 2*y_L / L²
+6. Detección de curvas a la derecha (dist_right o dist_right_ahead > corridor_width)
+7. Comportamiento de curva: velocidad reducida (v/8) + giro máximo a la derecha
+8. Eliminado nav_p2p.cpp y su launch (no pertenecían a esta práctica)
+9. Actualizado CMakeLists.txt para compilar solo corr_nav
+10. Ajustados parámetros: corridor_width=4.2m, look_ahead_distance=4.0m
+
+RESULTADOS OBTENIDOS:
+- Robot navega por el pasillo centrado entre las paredes
+- Detección anticipada de curvas a la derecha usando lectura a -45°
+- Velocidad reducida en curvas para evitar colisiones
+- Pure Pursuit mantiene al robot centrado en tramos rectos
+- Velocidad lineal configurable (max 1.0 m/s, reducida a v/4 en rectas)
+- Velocidad angular limitada a ±0.79 rad/s
+
+FÓRMULAS IMPLEMENTADAS:
+  θ = acos(W / (d_left + d_right)) * signo  (orientación respecto al pasillo)
+  e_lat = d_left - W/2  (error lateral, centrado en pasillo)
+  y_L = e_lat * cos(θ) - L * sin(θ)  (Pure Pursuit lateral offset)
+  γ = 2 * y_L / L²  (curvatura Pure Pursuit)
+  v = v_max / 4  (velocidad en rectas)
+  ω = clamp(γ * v, -ω_max, ω_max)  (velocidad angular)
+  En curva: v = v_max / 8, ω = -ω_max  (giro máximo derecha)
+
+EJECUCIÓN:
+  $ colcon build --packages-select seg_tray
+  $ source install/setup.bash
+  $ ros2 launch seg_tray corr_nav_launch.py
+
+ESTADO FINAL: FUNCIONAL ✓
+================================================================================
