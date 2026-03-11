@@ -129,11 +129,42 @@ private:
         if (waypoints_.empty()) {
             return;
         }
-        /////////// PUT YOUR CONTROL CODE HERE ///////////
-
-
-
         
+        // Calcular diferencias
+        double delta_x = goal_x_ - current_x_;
+        double delta_y = goal_y_ - current_y_;
+        double distance = std::sqrt(delta_x*delta_x + delta_y*delta_y);
+
+
+        // Error de orientación
+        double goal_theta = std::atan2(delta_y, delta_x);
+        double delta_theta = goal_theta - current_theta_;
+
+        // Normalización a [-pi, pi]
+        while (delta_theta > M_PI) delta_theta -= 2*M_PI;
+        while (delta_theta < -M_PI) delta_theta += 2*M_PI;
+
+        // Velocidad lineal deseada (fija a 1.2 m/s según el PDF)
+        double v = 1.2;
+        control_gain_ = 4.0;
+
+        // Curvatura (control proporcional)
+        double gamma = control_gain_ * delta_theta;
+
+        // Velocidaddes angulares de ruedas
+        double omega_i = v * (1.0 -  gamma) / wheel_radius_;
+        double omega_d = v * (1.0 + gamma) / wheel_radius_;
+
+        // Limite de velocidades angulares
+        double max_omega = 0.79;  
+        omega_i = std::max(-max_omega, std::min(omega_i, max_omega));
+        omega_d = std::max(-max_omega, std::min(omega_d, max_omega));
+        
+        // Convertir a velocidades lineales y angulares (cinemática inversa)
+        double linear_velocity = (omega_i + omega_d) * wheel_radius_ / 2.0;
+        double angular_velocity = (omega_d - omega_i) * wheel_radius_ / (2.0 * wheel_base_);
+
+
 
 
         geometry_msgs::msg::Twist cmd_vel_msg;
@@ -206,6 +237,7 @@ private:
     int time_step_;
     double max_linear_speed_;
     double max_angular_speed_;
+
 };
 
 
