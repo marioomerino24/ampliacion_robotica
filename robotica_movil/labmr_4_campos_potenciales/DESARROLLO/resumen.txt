@@ -1,0 +1,50 @@
+================================================================================
+AMPLIACIÓN DE ROBÓTICA - LAB-MR 4: CAMPOS POTENCIALES
+Resumen de Desarrollo - Navegación reactiva con evitación de obstáculos
+================================================================================
+
+PUNTO DE PARTIDA:
+- Plantilla MATLAB incompleta (plantilla_campos_potenciales.m) con el bucle vacío
+- Mapa de ocupación binario (mapa1_150.png)
+- Sensor láser simulado mediante rayIntersection() (función SimulaLidar ya provista)
+- Parámetros iniciales: v=0.4, D=1.5, alfa=1, beta=100
+
+QUÉ HACÍA FALTA:
+1. Obtener los puntos de obstáculos en cada iteración usando SimulaLidar
+2. Filtrar los puntos dentro del rango de influencia D (y eliminar NaN)
+3. Calcular la fuerza de atracción hacia el destino (F_atr)
+4. Calcular la fuerza de repulsión total de los obstáculos cercanos (F_rep)
+5. Combinar ambas fuerzas y mover el robot en la dirección resultante
+
+QUÉ HEMOS HECHO:
+1. Llamada a SimulaLidar dentro del bucle (el sensor se re-evalúa en cada paso)
+2. Filtrado de NaN (rayos sin impacto) y obstáculos fuera de rango D
+3. F_atr = alfa * (destino - robot) / |destino - robot|  (vector unitario escalado)
+4. F_rep = suma sobre obstáculos cercanos de:
+       beta * (1/d - 1/D) * (1/d²) * (robot - obs_i) / |robot - obs_i|
+5. Movimiento: theta = atan2(F_res_y, F_res_x), robot avanza v metros en esa dirección
+
+RESULTADOS OBTENIDOS:
+- El robot navega desde el origen hasta el destino evitando obstáculos
+- La trayectoria se dibuja en tiempo real sobre el mapa
+- Si se supera el límite de 1000 iteraciones se detecta mínimo local
+
+FÓRMULAS IMPLEMENTADAS:
+  F_atr = alfa * (q_dest - q) / ||q_dest - q||
+  F_rep_i = beta * (1/d_i - 1/D) * (1/d_i²) * (q - q_obs_i) / ||q - q_obs_i||
+  F_res = F_atr + sum(F_rep_i)
+  theta = atan2(F_res_y, F_res_x)
+  q_new = [q_x + v*cos(theta), q_y + v*sin(theta), theta]
+
+LIMITACIONES DEL MÉTODO:
+- Susceptible a mínimos locales: si F_atr y F_rep se anulan, el robot queda atascado
+- No se puede resolver el mínimo local solo cambiando alfa y beta
+- Soluciones posibles: perturbación aleatoria, navegación tangencial, planificación global
+
+EJECUCIÓN:
+  1. Abrir MATLAB en el directorio matlab/
+  2. Ejecutar plantilla_campos_potenciales.m
+  3. Hacer clic en el mapa para seleccionar origen (verde) y destino (rojo)
+
+ESTADO FINAL: FUNCIONAL
+================================================================================
