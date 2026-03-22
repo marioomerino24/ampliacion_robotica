@@ -30,18 +30,18 @@ Las memorias de cada practica estan disponibles como PDF compilado dentro del re
 
 ### Robotica Movil
 
-| Lab | Titulo | PDF | Estado |
-|-----|--------|-----|--------|
-| Lab-MR1-I | Seguimiento de caminos explicitos | [`main.pdf`](memorias/robotica_movil/lab1_caminos_explicitos/main.pdf) | Completada |
-| Lab-MR1-II | Seguimiento de caminos implicitos | [`main.pdf`](memorias/robotica_movil/lab1_caminos_implicitos/main.pdf) | Completada |
-| Lab-MR2 | Percepcion del entorno | [`main.pdf`](memorias/robotica_movil/lab2_percepcion/main.pdf) | Completada |
-| Lab-MR4 | Campos potenciales | [`main.pdf`](memorias/robotica_movil/lab4_campos_potenciales/main.pdf) | Esqueleto |
+| Lab | Titulo | PDF | Video | Estado |
+|-----|--------|-----|-------|--------|
+| Lab-MR1-I | Seguimiento de caminos explicitos | [`main.pdf`](memorias/robotica_movil/lab1_caminos_explicitos/main.pdf) | - | Completada |
+| Lab-MR1-II | Seguimiento de caminos implicitos | [`main.pdf`](memorias/robotica_movil/lab1_caminos_implicitos/main.pdf) | [Drive](https://drive.google.com/file/d/1I6tOLcURG61m_-ohzUyiiBDkwep3uvLk/view) | Completada |
+| Lab-MR2 | Percepcion del entorno | [`main.pdf`](memorias/robotica_movil/lab2_percepcion/main.pdf) | [Drive](https://drive.google.com/file/d/1FnFhbGMeaFnEXlVtZfJK5_TjgRE5hLpe/view) | Completada |
+| Lab-MR4 | Campos potenciales | [`main.pdf`](memorias/robotica_movil/lab4_campos_potenciales/main.pdf) | - | Esqueleto |
 
 ### Manipuladores
 
-| Lab | Titulo | PDF | Estado |
-|-----|--------|-----|--------|
-| - | - | - | - |
+| Lab | Titulo | PDF | Video | Estado |
+|-----|--------|-----|-------|--------|
+| - | - | - | - | - |
 
 ---
 
