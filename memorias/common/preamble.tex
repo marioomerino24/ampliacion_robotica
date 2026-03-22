@@ -1,0 +1,58 @@
+% ===== Idioma y codificación =====
+\usepackage[spanish, es-nodecimaldot]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+
+% ===== Tipografía moderna =====
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{microtype}
+\usepackage{xcolor}
+
+% ===== Márgenes y formato =====
+\usepackage[a4paper,top=2.8cm,bottom=2.8cm,left=3cm,right=3cm]{geometry}
+\usepackage{titlesec}
+\titleformat{\section}{\Large\bfseries}{\thesection.\ }{0.4em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection.\ }{0.4em}{}
+\titlespacing*{\section}{0pt}{1.6ex plus .5ex minus .2ex}{1.0ex}
+\titlespacing*{\subsection}{0pt}{1.2ex plus .5ex minus .2ex}{0.7ex}
+
+% ===== Colores =====
+\definecolor{UMABlue}{RGB}{0,51,102}
+
+% ===== Paquetes útiles =====
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, decorations.markings, patterns}
+\sisetup{locale=DE}
+
+% ===== Estilo para listados de código =====
+\lstset{
+  language=C++,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\bfseries\color{UMABlue},
+  commentstyle=\itshape\color{gray},
+  stringstyle=\color{red!60!black},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=6pt,
+  frame=single,
+  framerule=0.4pt,
+  rulecolor=\color{gray!50},
+  breaklines=true,
+  tabsize=4,
+  showstringspaces=false,
+  captionpos=b,
+  aboveskip=8pt,
+  belowskip=6pt,
+}

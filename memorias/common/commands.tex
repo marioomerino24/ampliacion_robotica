@@ -1,0 +1,49 @@
+% ===== Comandos personalizados — Ampliación de Robótica =====
+
+% --- Abreviaturas frecuentes ---
+\newcommand{\ros}{ROS~2}
+\newcommand{\roshumble}{ROS~2 Humble}
+\newcommand{\coppelia}{CoppeliaSim}
+\newcommand{\pioneer}{Pioneer P3DX}
+
+% --- Unidades ---
+\newcommand{\ms}{\si{\meter\per\second}}
+\newcommand{\hz}[1]{\SI{#1}{\hertz}}
+\newcommand{\rad}{\si{\radian}}
+
+% --- Pendiente (texto rojo para secciones por completar) ---
+\newcommand{\pendiente}[1]{\textcolor{red}{\textbf{[PENDIENTE:} #1\textbf{]}}}
+
+% ===== Portada reutilizable =====
+% Uso: \portada{LAB-ID}{Título}{Subtítulo}
+\newcommand{\portada}[3]{%
+  {%
+    \pagecolor{UMABlue}%
+    \color{white}%
+    \thispagestyle{empty}%
+    \begin{center}
+      \vspace*{0.8cm}
+      \includegraphics[width=0.22\textwidth]{\commonpath/img/logo_uma.png}\\[0.5cm]
+      {\large UNIVERSIDAD DE MÁLAGA\\[0.3cm]}
+      {\small Grado en Ingeniería Electrónica, Robótica y Mecatrónica\\[1.2cm]}
+      {\huge\bfseries Memoria de Práctica\\[0.6cm]}
+      {\LARGE\bfseries #1\\[0.2cm]}
+      {\Large\bfseries #2\\[0.4cm]}
+      {\normalsize\itshape #3\\[1.8cm]}
+      {\normalsize Ampliación de Robótica\\[0.8cm]}
+      {\large
+        Saúl Gutiérrez Rodríguez\\[0.15cm]
+        Pablo Haro García\\[0.15cm]
+        Mario Merino Prado\\[0.8cm]
+      }
+      \rule{0.55\textwidth}{0.4pt}\\[0.3cm]
+      {\small
+        Repositorio: \texttt{github.com/marioomerino24/ampliacion\_robotica}\\[0.1cm]
+        Entorno: \roshumble{} · \coppelia{} · \pioneer{}
+      }
+    \end{center}
+    \clearpage
+  }%
+  \nopagecolor%
+  \color{black}%
+}

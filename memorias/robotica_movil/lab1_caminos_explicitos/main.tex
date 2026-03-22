@@ -1,0 +1,238 @@
+\documentclass[12pt]{article}
+
+% ===== Configuración común =====
+\newcommand{\commonpath}{../../common}
+\input{\commonpath/preamble}
+\input{\commonpath/commands}
+\graphicspath{{figures/}{\commonpath/img/}}
+
+% ===== Documento =====
+\begin{document}
+
+\portada{Lab-MR1-I}{Seguimiento de caminos expl\'{i}citos}%
+        {Navegaci\'{o}n punto a punto con control proporcional}
+
+\tableofcontents
+\clearpage
+
+
+% =====================================================================
+%  1. INTRODUCCIÓN
+% =====================================================================
+\section{Introducci\'{o}n}
+
+\subsection{Objetivo de la pr\'{a}ctica}
+El objetivo de esta pr\'{a}ctica es implementar un sistema de \textbf{navegaci\'{o}n punto a punto} (\emph{point-to-point}, P2P) para un robot \pioneer{} simulado en \coppelia{}. El robot debe recorrer de forma aut\'{o}noma una secuencia de waypoints predefinidos, siguiendo un camino \textbf{expl\'{i}cito} ---es decir, la trayectoria se define mediante coordenadas conocidas de antemano--- hasta completar el recorrido.
+
+\subsection{Descripci\'{o}n del problema}
+Dado un conjunto ordenado de $N$ waypoints $\{(x_1, y_1),\dots,(x_N, y_N)\}$, el robot debe desplazarse desde su posici\'{o}n actual hasta cada waypoint sucesivo, consider\'{a}ndolo alcanzado cuando la distancia eucl\'{i}dea es inferior a una tolerancia $\epsilon$. El \'{u}nico sensor disponible para el control es la \textbf{odometr\'{i}a} del robot, que proporciona la pose $(x, y, \theta)$ en el plano.
+
+El problema se descompone en dos subproblemas:
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Orientaci\'{o}n}: dirigir el eje longitudinal del robot hacia el waypoint objetivo.
+  \item \textbf{Avance}: mantener una velocidad lineal que permita alcanzar el objetivo de forma estable.
+\end{enumerate}
+
+
+% =====================================================================
+%  2. FUNDAMENTOS TEÓRICOS
+% =====================================================================
+\section{Fundamentos te\'{o}ricos}
+
+\subsection{Modelo cinem\'{a}tico del robot}
+El \pioneer{} utiliza tracci\'{o}n \textbf{diferencial}: dos ruedas motrices de radio $R$ separadas una distancia $2K$ (distancia entre ejes). El modelo cinem\'{a}tico relaciona las velocidades angulares de las ruedas $(\omega_i, \omega_d)$ con las velocidades lineal $v$ y angular $\omega$ del robot:
+
+\begin{equation}
+  v = \frac{(\omega_i + \omega_d)\,R}{2}, \qquad
+  \omega = \frac{(\omega_d - \omega_i)\,R}{2K}
+  \label{eq:cinematica_directa}
+\end{equation}
+
+La cinem\'{a}tica inversa permite obtener las velocidades de rueda a partir de las velocidades deseadas del robot:
+
+\begin{equation}
+  \omega_i = \frac{v\,(1 - \gamma)}{R}, \qquad
+  \omega_d = \frac{v\,(1 + \gamma)}{R}
+  \label{eq:cinematica_inversa}
+\end{equation}
+
+donde $\gamma$ es la curvatura normalizada ($\gamma = K_p \cdot \Delta\theta$ en nuestro controlador).
+
+Los par\'{a}metros f\'{i}sicos del \pioneer{} son:
+\begin{itemize}[leftmargin=2em]
+  \item Radio de rueda: $R = \SI{0.097518}{\meter}$
+  \item Distancia entre ruedas: $2K = \SI{0.331}{\meter}$
+\end{itemize}
+
+\subsection{Algoritmo de control: control proporcional de rumbo}
+La estrategia de control implementada es un \textbf{controlador proporcional sobre el error de orientaci\'{o}n}. En cada ciclo de control se calcula:
+
+\begin{enumerate}[leftmargin=2em]
+  \item El \'{a}ngulo deseado hacia el waypoint objetivo:
+  \begin{equation}
+    \theta_\text{goal} = \text{atan2}(y_\text{goal} - y, \; x_\text{goal} - x)
+    \label{eq:theta_goal}
+  \end{equation}
+
+  \item El error de orientaci\'{o}n, normalizado al intervalo $[-\pi, \pi]$:
+  \begin{equation}
+    \Delta\theta = \text{normalize}(\theta_\text{goal} - \theta)
+    \label{eq:error_theta}
+  \end{equation}
+
+  \item La curvatura comandada mediante ganancia proporcional $K_p$:
+  \begin{equation}
+    \gamma = K_p \cdot \Delta\theta
+    \label{eq:curvatura}
+  \end{equation}
+\end{enumerate}
+
+La velocidad lineal $v$ se mantiene constante durante el desplazamiento. La curvatura $\gamma$ modula las velocidades de cada rueda seg\'{u}n las ecuaciones~\eqref{eq:cinematica_inversa}, lo que produce un giro proporcional al error angular: a mayor desviaci\'{o}n, mayor correcci\'{o}n.
+
+La condici\'{o}n de llegada a un waypoint es:
+\begin{equation}
+  \sqrt{(x_\text{goal} - x)^2 + (y_\text{goal} - y)^2} < \epsilon
+  \label{eq:tolerancia}
+\end{equation}
+
+donde $\epsilon$ es la tolerancia de proximidad.
+
+
+% =====================================================================
+%  3. DISEÑO E IMPLEMENTACIÓN
+% =====================================================================
+\section{Dise\~{n}o e implementaci\'{o}n}
+
+\subsection{Arquitectura del sistema}
+El sistema se compone de un \'{u}nico nodo \ros{} que se comunica con el simulador \coppelia{} a trav\'{e}s de topics est\'{a}ndar. El Cuadro~\ref{tab:nodos} resume la arquitectura.
+
+\begin{table}[H]
+  \centering
+  \caption{Nodos y topics \ros{} del sistema.}
+  \label{tab:nodos}
+  \begin{tabularx}{0.98\linewidth}{l l X}
+    \toprule
+    \textbf{Elemento} & \textbf{Tipo} & \textbf{Funci\'{o}n} \\
+    \midrule
+    \texttt{nav\_p2p\_node}           & Nodo (C++) & Lee odometr\'{i}a, calcula el control proporcional y publica \texttt{cmd\_vel}. \\
+    \texttt{/PioneerP3DX/odom}       & \texttt{Odometry}  & Pose y velocidades estimadas por odometr\'{i}a. \\
+    \texttt{/PioneerP3DX/cmd\_vel}   & \texttt{Twist}     & Comandos de velocidad lineal y angular. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+El bucle de control opera con un timer de \SI{25}{\milli\second} (40~Hz). Los waypoints se cargan desde un archivo YAML como par\'{a}metros \ros{}.
+
+\subsection{Estrategia de control}
+El flujo de control en cada iteraci\'{o}n es:
+
+\begin{enumerate}[leftmargin=2em]
+  \item Leer la pose actual $(x, y, \theta)$ desde la odometr\'{i}a, extrayendo el \'{a}ngulo \emph{yaw} del cuaterni\'{o}n.
+  \item Calcular la distancia eucl\'{i}dea al waypoint actual. Si es menor que $\epsilon$, avanzar al siguiente waypoint.
+  \item Calcular el error angular $\Delta\theta$ y la curvatura $\gamma = K_p \cdot \Delta\theta$.
+  \item Obtener las velocidades angulares de rueda $(\omega_i, \omega_d)$ mediante la cinem\'{a}tica inversa, saturarlas a $\pm\omega_\text{max}$.
+  \item Convertir de vuelta a $(v, \omega)$ mediante la cinem\'{a}tica directa y publicar el mensaje \texttt{Twist}.
+\end{enumerate}
+
+La velocidad lineal se fija a $v = \SI{1.2}{\meter\per\second}$ y la ganancia proporcional a $K_p = 4.0$ en el c\'{o}digo. Las velocidades angulares de rueda se saturan a $\pm\SI{0.79}{\radian\per\second}$.
+
+\subsection{Parametrizaci\'{o}n}
+El Cuadro~\ref{tab:parametros} recoge los par\'{a}metros del sistema, configurables desde \texttt{nav\_params.yaml}.
+
+\begin{table}[H]
+  \centering
+  \caption{Par\'{a}metros del controlador P2P.}
+  \label{tab:parametros}
+  \begin{tabularx}{0.98\linewidth}{l l X}
+    \toprule
+    \textbf{Par\'{a}metro} & \textbf{Valor} & \textbf{Descripci\'{o}n} \\
+    \midrule
+    \texttt{control\_gain} ($K_p$) & 4.0        & Ganancia proporcional sobre $\Delta\theta$. \\
+    \texttt{tolerance} ($\epsilon$) & \SI{1.0}{\meter} & Distancia m\'{i}nima para considerar un waypoint alcanzado. \\
+    \texttt{time\_step}           & \SI{25}{\milli\second} & Periodo del bucle de control (40~Hz). \\
+    \texttt{max\_linear\_speed}   & \SI{1.2}{\meter\per\second} & Velocidad lineal de crucero. \\
+    \texttt{max\_angular\_speed}  & \SI{0.79}{\radian\per\second} & L\'{i}mite de velocidad angular de rueda. \\
+    \texttt{wheel\_base} ($2K$)   & \SI{0.331}{\meter} & Distancia entre ruedas. \\
+    \texttt{wheel\_radius} ($R$)  & \SI{0.097518}{\meter} & Radio de las ruedas. \\
+    \texttt{loop\_waypoints}      & \texttt{false} & Repetir la secuencia al completarla. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+La secuencia de waypoints configurada describe un recorrido rectangular:
+
+\begin{center}
+$(0,0) \to (10,0) \to (10,10) \to (-10,10) \to (-10,-10) \to (10,-10) \to (0,0)$
+\end{center}
+
+
+% =====================================================================
+%  4. RESULTADOS EXPERIMENTALES
+% =====================================================================
+\section{Resultados experimentales}
+
+\subsection{Escenarios de prueba}
+El controlador se ha evaluado en un entorno abierto de \coppelia{} con la secuencia de 7 waypoints rectangulares. Se ha probado con y sin bucle (\texttt{loop\_waypoints}).
+
+\subsection{An\'{a}lisis cuantitativo}
+
+\begin{table}[H]
+  \centering
+  \caption{Resultados de la navegaci\'{o}n P2P.}
+  \label{tab:resultados}
+  \begin{tabularx}{0.98\linewidth}{l c X}
+    \toprule
+    \textbf{Escenario} & \textbf{Resultado} & \textbf{Observaci\'{o}n} \\
+    \midrule
+    Recorrido rectangular (7 WP) & $\checkmark$ & Todos los waypoints alcanzados dentro de la tolerancia. \\
+    Recorrido en bucle            & $\checkmark$ & Repetici\'{o}n estable sin acumulaci\'{o}n de error apreciable. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{An\'{a}lisis cualitativo}
+El robot se orienta r\'{a}pidamente hacia cada waypoint gracias a la ganancia $K_p = 4.0$, que produce correcciones agresivas en el rumbo. En los tramos rectos la trayectoria es estable. En los giros de $90^\circ$ (cambio de waypoint) el robot describe una curva suave, ya que las velocidades de rueda est\'{a}n saturadas y el giro se distribuye a lo largo de varios ciclos de control.
+
+La tolerancia de $\epsilon = \SI{1.0}{\meter}$ es relativamente amplia, lo que evita oscilaciones al aproximarse al objetivo pero implica que el robot no pasa exactamente por el waypoint.
+
+
+% =====================================================================
+%  5. DISCUSIÓN
+% =====================================================================
+\section{Discusi\'{o}n}
+
+\subsection{Problemas encontrados y soluciones}
+
+\paragraph{Problema 1: oscilaciones en la orientaci\'{o}n.}
+Con ganancias bajas ($K_p = 1.0$) el robot corrige lentamente y describe trayectorias con desviaciones laterales significativas. Al aumentar la ganancia a $K_p = 4.0$ la respuesta es r\'{a}pida, pero si se incrementa m\'{a}s ($K_p > 6$) aparecen oscilaciones porque el error angular cambia de signo en cada ciclo. La soluci\'{o}n es el valor $K_p = 4.0$, que ofrece un compromiso entre rapidez y estabilidad.
+
+\paragraph{Problema 2: discontinuidad angular en $\pm\pi$.}
+Sin normalizaci\'{o}n del error angular, cuando el waypoint est\'{a} aproximadamente detr\'{a}s del robot ($|\Delta\theta| \approx \pi$) el controlador puede calcular giros en el sentido incorrecto. La soluci\'{o}n es normalizar $\Delta\theta$ al intervalo $[-\pi, \pi]$ en cada ciclo.
+
+\paragraph{Problema 3: saturaci\'{o}n de velocidades.}
+Las velocidades angulares de las ruedas calculadas por la cinem\'{a}tica inversa pueden exceder los l\'{i}mites f\'{i}sicos del motor. Se aplica una saturaci\'{o}n sim\'{e}trica $\omega_i, \omega_d \in [-0.79, 0.79]~\si{\radian\per\second}$, y despu\'{e}s se recalculan $(v, \omega)$ mediante la cinem\'{a}tica directa para mantener la coherencia.
+
+\subsection{Limitaciones}
+\begin{itemize}[leftmargin=2em]
+  \item El controlador no considera \textbf{obst\'{a}culos}: en entornos no libres el robot colisionar\'{a}.
+  \item La navegaci\'{o}n depende exclusivamente de la \textbf{odometr\'{i}a}, que acumula error con el tiempo (\emph{drift}).
+  \item No existe control sobre la \textbf{velocidad lineal} en funci\'{o}n de la proximidad al objetivo: el robot llega a cada waypoint a velocidad constante.
+  \item Las curvas solo pueden realizarse hacia el lado del waypoint siguiente; no se implementa suavizado de trayectoria entre waypoints consecutivos.
+\end{itemize}
+
+
+% =====================================================================
+%  6. CONCLUSIONES
+% =====================================================================
+\section{Conclusiones}
+Se ha implementado un sistema de navegaci\'{o}n punto a punto para el \pioneer{} en C++ sobre \ros{}, basado en un controlador proporcional de rumbo con cinem\'{a}tica diferencial. El sistema:
+
+\begin{enumerate}[leftmargin=2em]
+  \item Calcula el error de orientaci\'{o}n hacia cada waypoint y lo corrige proporcionalmente mediante la curvatura $\gamma = K_p \cdot \Delta\theta$.
+  \item Convierte la curvatura en velocidades de rueda, las satura, y recalcula $(v, \omega)$ para mantener coherencia cinem\'{a}tica.
+  \item Gestiona secuencias de waypoints con detecci\'{o}n de llegada por tolerancia eucl\'{i}dea.
+\end{enumerate}
+
+El resultado es un controlador sencillo y robusto para entornos libres de obst\'{a}culos. Como trabajo futuro se podr\'{i}a a\~{n}adir reducci\'{o}n de velocidad al aproximarse al objetivo, suavizado de trayectorias entre waypoints y fusi\'{o}n con sensores externos para corregir el \emph{drift} odom\'{e}trico.
+
+\end{document}
