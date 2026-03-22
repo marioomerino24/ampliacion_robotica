@@ -14,5 +14,3 @@
 *.snm
 *.vrb
 
-# PDF compilados (se regeneran con make)
-**/main.pdf
