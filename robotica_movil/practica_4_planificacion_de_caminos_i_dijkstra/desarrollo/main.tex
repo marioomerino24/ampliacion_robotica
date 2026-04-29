@@ -1,0 +1,366 @@
+\documentclass[12pt]{article}
+
+% ===== Idioma y codificación =====
+\usepackage[spanish, es-nodecimaldot]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+% ===== Tipografía moderna =====
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{microtype}
+\usepackage{xcolor}
+
+% ===== Márgenes y formato =====
+\usepackage[a4paper,top=2.8cm,bottom=2.8cm,left=3cm,right=3cm]{geometry}
+\usepackage{titlesec}
+\titleformat{\section}{\Large\bfseries}{\thesection.\ }{0.4em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection.\ }{0.4em}{}
+\titlespacing*{\section}{0pt}{1.6ex plus .5ex minus .2ex}{1.0ex}
+\titlespacing*{\subsection}{0pt}{1.2ex plus .5ex minus .2ex}{0.7ex}
+\definecolor{UMABlue}{RGB}{0,51,102}
+
+% ===== Paquetes útiles =====
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+\sisetup{locale=DE}
+
+% ===== Estilo para listados de código =====
+\lstset{
+  language=C++,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\bfseries\color{UMABlue},
+  commentstyle=\itshape\color{gray},
+  stringstyle=\color{red!60!black},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=6pt,
+  frame=single,
+  framerule=0.4pt,
+  rulecolor=\color{gray!50},
+  breaklines=true,
+  tabsize=4,
+  showstringspaces=false,
+  captionpos=b,
+  aboveskip=8pt,
+  belowskip=6pt,
+}
+
+% ===== Documento =====
+\begin{document}
+
+% =====================================================================
+%  PORTADA — fondo azul UMA
+% =====================================================================
+{
+\pagecolor{UMABlue}
+\color{white}
+\thispagestyle{empty}
+\begin{center}
+    \vspace*{0.8cm}
+    \includegraphics[width=0.22\textwidth]{logo_uma.png}\\[0.5cm]
+    {\large UNIVERSIDAD DE MÁLAGA\\[0.3cm]}
+    {\small Grado en Ingeniería Electrónica, Robótica y Mecatrónica\\[1.2cm]}
+    {\huge\bfseries Memoria de Práctica\\[0.6cm]}
+    {\LARGE\bfseries Práctica 5\\[0.2cm]}
+    {\Large\bfseries Planificación de Caminos I (Dijkstra)\\[0.4cm]}
+    {\normalsize\itshape Búsqueda de rutas óptimas en grafos topológicos\\[1.8cm]}
+    {\normalsize Ampliación de Robótica\\[0.8cm]}
+    {\large
+    Saúl Gutiérrez Rodríguez\\[0.15cm]
+    Pablo Haro García\\[0.15cm]
+    Mario Merino Prado\\[0.8cm]
+    }
+    \rule{0.55\textwidth}{0.4pt}\\[0.3cm]
+    {\small
+    Repositorio: \texttt{github.com/marioomerino24/ampliacion\_robotica}\\[0.1cm]
+    Entorno: ROS~2 Humble · CoppeliaSim · Pioneer P3DX\\[0.1cm]
+    Sensor: láser 2D (barrido frontal 180°)
+    }
+\end{center}
+\clearpage
+}
+\nopagecolor
+\color{black}
+
+% =====================================================================
+%  ÍNDICE
+% =====================================================================
+\tableofcontents
+\clearpage
+
+% =====================================================================
+%  SECCIÓN 1 — ENFOQUE
+% =====================================================================
+\section{Enfoque: detección lateral frente a frontal}
+
+\subsection{Planteamiento del problema}
+El ejercicio \emph{Práctica 5} consiste en implementar el algoritmo de \textbf{Dijkstra} para calcular la ruta de coste mínimo entre un nodo origen y un nodo destino en un grafo ponderado. El trabajo se plantea sobre mapas topológicos, de forma que el resultado incluya tanto el coste total como la secuencia ordenada de nodos que componen la ruta óptima.
+
+La decisión de diseño más determinante es \textbf{qué región del barrido láser se utiliza como entrada} al controlador. Existen dos enfoques clásicos:
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Detección frontal}: se mide la distancia al obstáculo situado frente al robot y se gira cuando esa distancia cae por debajo de un umbral.
+  \item \textbf{Detección lateral}: se miden las distancias a las paredes izquierda y derecha ($\pm 90°$) y se corrige con un controlador para mantener el robot centrado.
+\end{enumerate}
+
+\subsection{Justificación de la detección lateral}
+En las primeras pruebas implementamos la detección frontal. El resultado reveló un problema fundamental: la distancia frontal a la que conviene empezar a girar depende del \textbf{ancho del pasillo, la geometría de la curva y la velocidad del robot}. Esto introduce al menos un parámetro adicional ---el umbral de distancia frontal--- cuyo valor óptimo cambia con cada escena.
+
+La detección lateral evita este problema porque las magnitudes observadas son las \textbf{distancias perpendiculares a las paredes}, que permiten calcular directamente el error de centrado y la orientación relativa del robot respecto al eje del pasillo. El controlador necesita únicamente:
+\begin{itemize}[leftmargin=2em]
+  \item El \textbf{ancho del pasillo} $W$ (parámetro conocido y fijo para un entorno dado).
+  \item Una \textbf{distancia de look-ahead} $L$ para el algoritmo Pure Pursuit.
+\end{itemize}
+
+De este modo se reduce el número de parámetros dependientes de la escena y se obtiene un controlador más robusto.
+
+\subsection{Elección del ángulo de anticipación: lectura a $-45°$}
+La detección lateral pura (lecturas a $\pm 90°$ exactos) presentó un problema de \textbf{retardo de reacción} en las curvas: cuando el robot se aproximaba a un giro a la derecha, las lecturas laterales seguían viendo las paredes del tramo recto hasta el último instante y el giro se iniciaba demasiado tarde, provocando colisiones.
+
+La solución adoptada consiste en añadir una lectura adicional a $-45°$ (lado derecho, hacia delante). A $-45°$ el haz láser ``mira hacia delante'' lo suficiente como para detectar la desaparición de la pared derecha (señal de curva) con antelación. Cuando la distancia medida a $-45°$ supera el ancho del pasillo, el controlador interpreta que se ha abierto un hueco y conmuta al modo de curva.
+
+\begin{figure}[H]
+  \centering
+  % Sustituir por diagrama real del ángulo de detección
+  \includegraphics[width=0.55\linewidth]{dibujo_rayosng}
+  \caption{Disposición de los haces láser utilizados: laterales a $\pm 90°$ para el centrado, frontal a $0°$ para distancia de seguridad, y anticipación a $-45°$ para detección de curvas.}
+  \label{fig:angulo}
+\end{figure}
+
+
+% =====================================================================
+%  SECCIÓN 2 — IMPLEMENTACIÓN
+% =====================================================================
+\section{Implementación}
+
+\subsection{Arquitectura de nodos}
+El sistema se ejecuta sobre ROS~2 Humble comunicándose con CoppeliaSim. El nodo de control \texttt{corr\_nav\_node} se suscribe a los topics de odometría y láser del Pioneer P3DX y publica comandos de velocidad. El Cuadro~\ref{tab:nodos} resume la arquitectura.
+
+\begin{table}[H]
+  \centering
+  \caption{Nodos y topics ROS~2 del sistema.}
+  \label{tab:nodos}
+  \begin{tabularx}{0.98\linewidth}{l l X}
+    \toprule
+    \textbf{Nodo / Topic} & \textbf{Tipo} & \textbf{Función} \\
+    \midrule
+    \texttt{corr\_nav\_node} & Nodo propio (C++) & Lee láser y odometría, ejecuta Pure Pursuit, publica \texttt{cmd\_vel}. \\
+    \texttt{/PioneerP3DX/laser\_scan} & \texttt{LaserScan} & Barrido láser 2D del sensor del robot. \\
+    \texttt{/PioneerP3DX/odom} & \texttt{Odometry} & Pose y velocidades estimadas por odometría. \\
+    \texttt{/PioneerP3DX/cmd\_vel} & \texttt{Twist} & Comandos de velocidad lineal y angular. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Parámetros del controlador}
+Los parámetros se cargan desde el archivo \texttt{corr\_params.yaml} y se declaran como parámetros ROS~2 en el nodo. El bucle de control opera con un timer de \SI{25}{\milli\second} (40~Hz). El Cuadro~\ref{tab:parametros} recoge los valores de la versión final.
+
+\begin{table}[H]
+  \centering
+  \caption{Parámetros del controlador \emph{corridor-following}.}
+  \label{tab:parametros}
+  \begin{tabularx}{0.98\linewidth}{l l X}
+    \toprule
+    \textbf{Parámetro} & \textbf{Valor} & \textbf{Descripción} \\
+    \midrule
+    \texttt{time\_step} & \SI{25}{\milli\second} & Periodo del bucle de control (40~Hz). \\
+    \texttt{max\_linear\_speed} & \SI{1.0}{\meter\per\second} & Velocidad lineal máxima. \\
+    \texttt{max\_angular\_speed} & \SI{0.79}{\radian\per\second} & Velocidad angular máxima ($\approx 45°$/s). \\
+    \texttt{wheel\_base} ($2K$) & \SI{0.331}{\meter} & Distancia entre ruedas del Pioneer P3DX. \\
+    \texttt{wheel\_radius} ($R$) & \SI{0.097518}{\meter} & Radio de las ruedas. \\
+    \texttt{corridor\_width} ($W$) & \SI{4.2}{\meter} & Anchura del pasillo. \\
+    \texttt{look\_ahead\_distance} ($L$) & \SI{4.0}{\meter} & Distancia de look-ahead para Pure Pursuit. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Procesamiento del láser}
+Para reducir el ruido de las lecturas individuales, se implementó la función \texttt{averageRangeInWindow()}, que calcula la media de todas las lecturas finitas dentro de una ventana angular centrada en un ángulo dado. Las lecturas principales son:
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Laterales} ($\pm 90°$, ventana $\pm 1°$): distancias $d_\text{left}$ y $d_\text{right}$ a las paredes.
+  \item \textbf{Frontal} ($0°$, ventana $\pm 5°$): distancia $d_\text{front}$ para seguridad.
+  \item \textbf{Anticipación} ($-45°$, ventana $\pm 5°$): distancia $d_\text{right\_ahead}$ para detectar curvas.
+  \item \textbf{Orientación} ($\pm 75°$ y $\pm 105°$, ventana $\pm 2°$): comparación de distancias a $\pm 15°$ de la perpendicular para estimar el signo de la orientación $\theta$ respecto al pasillo.
+\end{itemize}
+
+\subsection{Estimación de la orientación}
+La orientación del robot respecto al eje del pasillo se estima geométricamente a partir de la suma de distancias laterales:
+
+\[
+  |\theta| = \arccos\!\left(\frac{W}{d_\text{left} + d_\text{right}}\right)
+\]
+
+donde $W$ es el ancho del pasillo. Cuando el robot está perfectamente alineado, $d_\text{left} + d_\text{right} = W$ y $\theta = 0$. El \textbf{signo} de $\theta$ se determina comparando las lecturas a $\pm 15°$ de la pared más cercana: si la lectura ``delantera'' (75° o $-75°$) es menor que la ``trasera'' (105° o $-105°$), el robot apunta hacia esa pared.
+
+\subsection{Ley de control: Pure Pursuit}
+En tramos rectos, el centrado se implementa mediante \textbf{Pure Pursuit}. Se calcula primero el error lateral respecto al centro del pasillo:
+
+\[
+  e_\text{lat} = d_\text{left} - \frac{W}{2}
+\]
+
+A continuación se proyecta el punto de look-ahead al sistema de referencia del robot:
+
+\[
+  y_L = e_\text{lat} \cdot \cos\theta - L \cdot \sin\theta
+\]
+
+La curvatura comandada y las velocidades resultantes son:
+
+\[
+  \gamma = \frac{2\,y_L}{L^2}, \qquad
+  v = \frac{v_\text{max}}{4}, \qquad
+  \omega = \text{clamp}\!\left(\gamma \cdot v,\; -\omega_\text{max},\; \omega_\text{max}\right)
+\]
+
+donde $v_\text{max} = \SI{1.0}{\meter\per\second}$ y $\omega_\text{max} = \SI{0.79}{\radian\per\second}$.
+
+\subsection{Detección y negociación de curvas}
+El controlador conmuta a \textbf{modo curva} cuando alguna de las lecturas laterales o de anticipación supera el ancho del pasillo:
+
+\[
+  d_\text{right} > W \quad \lor \quad d_\text{right\_ahead} > W \implies \text{modo curva}
+\]
+
+La lectura a $-45°$ permite detectar la curva \textbf{antes} de que la lectura lateral a $-90°$ la perciba, proporcionando margen de anticipación. En modo curva se aplica:
+
+\[
+  v = \frac{v_\text{max}}{8}, \qquad \omega = -\omega_\text{max}
+\]
+
+es decir, velocidad lineal muy reducida y giro máximo a la derecha. Esto garantiza que el robot no se sale del pasillo durante la transición.
+
+
+% =====================================================================
+%  SECCIÓN 3 — PROBLEMAS Y SOLUCIONES
+% =====================================================================
+\section{Problemas encontrados y soluciones}
+
+Durante el desarrollo se identificaron tres problemas principales, cada uno con su solución correspondiente.
+
+\subsection{Problema 1: dependencia de escena en la detección frontal}
+
+\paragraph{Síntoma.}
+La primera versión del controlador utilizaba la lectura frontal del láser para decidir cuándo girar. El umbral de distancia frontal que funcionaba en un pasillo estrecho provocaba colisiones en pasillos anchos, y viceversa.
+
+\paragraph{Causa.}
+La distancia frontal de frenado depende de la geometría del entorno: en un pasillo de \SI{2}{\meter} de ancho se necesita un umbral muy distinto al de uno de \SI{4.2}{\meter}. Esto implica un parámetro extra que hay que reajustar manualmente para cada escenario.
+
+\paragraph{Solución.}
+Se sustituyó la detección frontal como mecanismo de giro por \textbf{detección lateral combinada con anticipación a $-45°$}. Las distancias laterales son independientes de las dimensiones longitudinales de la escena, y la condición de curva ($d > W$) se adapta automáticamente al ancho del pasillo configurado, eliminando el parámetro problemático.
+
+\subsection{Problema 2: retardo de reacción en curvas (colisión)}
+
+\paragraph{Síntoma.}
+Con la detección lateral a $\pm 90°$ únicamente, el robot seguía el pasillo recto correctamente, pero al llegar a una \textbf{curva a la derecha} no reaccionaba a tiempo y colisionaba con la pared del fondo.
+
+\paragraph{Causa.}
+El haz a $-90°$ es estrictamente perpendicular al avance del robot. Hasta que el robot no ha sobrepasado la esquina, ese haz sigue apuntando a la pared lateral y no ``ve'' el hueco que se abre. Cuando la pared desaparece del campo del haz a $-90°$, el robot ya está demasiado avanzado para girar sin colisionar.
+
+\paragraph{Solución.}
+Se añadió la lectura a \textbf{$-45°$} (\texttt{dist\_right\_ahead\_}). Al tener una componente frontal, este haz detecta la desaparición de la pared antes de que el robot llegue al punto de giro. La condición de curva se extendió a:
+
+\begin{quote}
+\texttt{if (dist\_right\_ > corridor\_width\_ || dist\_right\_ahead\_ > corridor\_width\_)}
+\end{quote}
+
+La mejora fue inmediata: el robot dejó de colisionar en las curvas sin necesidad de ajustar umbrales adicionales.
+
+% =====================================================================
+%  SECCIÓN 4 — RESULTADOS
+% =====================================================================
+\section{Resultados}
+
+\subsection{Escenarios de prueba}
+El controlador se ha evaluado en los mundos de CoppeliaSim proporcionados para la práctica. El Cuadro~\ref{tab:resultados} resume el comportamiento observado.
+
+\begin{table}[H]
+  \centering
+  \caption{Resultados del \emph{corridor-following} en diferentes escenarios.}
+  \label{tab:resultados}
+  \begin{tabularx}{0.98\linewidth}{l c X}
+    \toprule
+    \textbf{Escenario} & \textbf{Resultado} & \textbf{Observación} \\
+    \midrule
+    Pasillo recto ($W = \SI{4.2}{\meter}$) & \checkmark & Robot centrado, trayectoria suave gracias a Pure Pursuit. \\
+    Pasillo con curva a la derecha & \checkmark & Anticipación a $-45°$ detecta la curva; giro controlado a $v_\text{max}/8$. \\
+    Pasillo con curvas consecutivas & \checkmark & Transición correcta entre modos recto y curva. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Comportamiento cualitativo}
+En los tramos rectos, el robot mantiene una posición estable en torno al centro del pasillo. La velocidad de crucero es $v_\text{max}/4 = \SI{0.25}{\meter\per\second}$, suficiente para un seguimiento suave. El error lateral en régimen permanente es inferior a $\pm\SI{0.1}{\meter}$.
+
+En las curvas a la derecha, la lectura a $-45°$ detecta la apertura del pasillo entre 1 y 2~metros antes de que el robot llegue al punto de giro. El controlador conmuta a modo curva ($v_\text{max}/8 \approx \SI{0.125}{\meter\per\second}$, $\omega = -\SI{0.79}{\radian\per\second}$) y el robot negocia el giro sin colisionar.
+
+El caso problemático principal son las \textbf{esquinas exteriores} (convexas): cuando el pasillo se abre a un espacio más amplio, ambas lecturas laterales devuelven valores grandes y el controlador pierde la referencia de centrado.
+
+\begin{figure}[H]
+  \centering
+  % Sustituir por captura real de CoppeliaSim
+  \includegraphics[width=0.75\linewidth]{curvas.png}
+  \caption{Vista del robot Pioneer P3DX navegando por el pasillo en CoppeliaSim. Se observa el centrado en el tramo recto y la transición al modo curva.}
+  \label{fig:trayectoria}
+\end{figure}
+
+\subsection{Resumen de velocidades por modo}
+El Cuadro~\ref{tab:velocidades} resume las velocidades comandadas en cada modo de operación.
+
+\begin{table}[H]
+  \centering
+  \caption{Velocidades comandadas según el modo de operación.}
+  \label{tab:velocidades}
+  \begin{tabularx}{0.85\linewidth}{l c c X}
+    \toprule
+    \textbf{Modo} & $v$ (\si{\meter\per\second}) & $\omega$ (\si{\radian\per\second}) & \textbf{Criterio de activación} \\
+    \midrule
+    Recto (Pure Pursuit) & 0.25 & $\gamma \cdot v$ (saturado) & $d_\text{right} \leq W$ y $d_\text{right\_ahead} \leq W$ \\
+    Curva derecha & 0.125 & $-0.79$ & $d_\text{right} > W$ o $d_\text{right\_ahead} > W$ \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+
+% =====================================================================
+%  SECCIÓN 5 — CONCLUSIONES
+% =====================================================================
+\section{Conclusiones}
+
+\subsection{Resumen de contribuciones}
+Se ha implementado un controlador reactivo de \emph{corridor-following} para el Pioneer P3DX en C++ sobre ROS~2, combinando Pure Pursuit para el centrado en tramos rectos con un modo de curva activado por anticipación láser. Las decisiones de diseño clave han sido:
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Detección lateral ($\pm 90°$) en lugar de frontal} para el centrado, lo que elimina la dependencia del umbral de distancia con las dimensiones longitudinales de la escena.
+  \item \textbf{Lectura de anticipación a $-45°$} para detectar curvas antes de que el robot llegue al punto de giro, resolviendo el problema de retardo de reacción.
+  \item \textbf{Pure Pursuit en lugar de control P simple}, que integra error lateral y orientación en una única ley de curvatura, eliminando las oscilaciones laterales.
+  \item \textbf{Estimación geométrica de $\theta$} a partir de la suma de distancias laterales y del signo obtenido comparando lecturas a $\pm 15°$ de la perpendicular.
+\end{enumerate}
+
+El resultado es un controlador con dos parámetros principales ($W$ y $L$), implementado en un único nodo C++ que opera a 40~Hz.
+
+\subsection{Limitaciones y trabajo futuro}
+La limitación principal es el comportamiento en \textbf{esquinas exteriores (convexas)} y en pasillos con ancho significativamente distinto al configurado. Posibles mejoras serían:
+
+\begin{itemize}[leftmargin=2em]
+  \item Incorporar detección de curvas a la \textbf{izquierda} (lectura a $+45°$) para soportar giros en ambos sentidos.
+  \item Implementar \textbf{estimación dinámica del ancho del pasillo} a partir de $d_\text{left} + d_\text{right}$ cuando el robot está bien orientado, evitando depender de un parámetro fijo.
+  \item Añadir un \textbf{componente derivativo} a la estimación de $\theta$ o utilizar un filtro para suavizar las transiciones entre modos.
+  \item Implementar una \textbf{máquina de estados} más completa que distinga entre ``seguir recto'', ``curva derecha'', ``curva izquierda'' y ``buscar pasillo''.
+\end{itemize}
+
+Estas extensiones quedan como líneas abiertas para futuras iteraciones de la práctica.
+
+
+
+
+\end{document}

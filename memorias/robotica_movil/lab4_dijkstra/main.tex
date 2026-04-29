@@ -1,0 +1,165 @@
+\documentclass[12pt]{article}
+
+% ===== Configuración común =====
+\newcommand{\commonpath}{../../common}
+\input{\commonpath/preamble}
+\input{\commonpath/commands}
+\graphicspath{{figures/}{\commonpath/img/}}
+
+% ===== Documento =====
+\begin{document}
+
+\portada{Lab-MR4}{Planificaci\'{o}n de caminos I}%
+        {Algoritmo de Dijkstra sobre grafo topol\'{o}gico}
+
+\tableofcontents
+\clearpage
+
+
+% =====================================================================
+%  1. INTRODUCCIÓN
+% =====================================================================
+\section{Introducci\'{o}n}
+
+\subsection{Objetivo de la pr\'{a}ctica}
+El objetivo es implementar el \textbf{algoritmo de Dijkstra} para calcular la ruta de coste m\'{i}nimo entre dos nodos de un grafo topol\'{o}gico ponderado, partiendo de las matrices de adyacencia proporcionadas en el fichero \texttt{grafos.mat}. El resultado proporciona, para una pareja origen--destino, el coste total acumulado y la secuencia de nodos del camino \'{o}ptimo.
+
+\subsection{Descripci\'{o}n del problema}
+Dado un grafo dirigido $\mathcal{G} = (\mathcal{V}, \mathcal{E})$ con $N$ v\'{e}rtices y una matriz de costes $G \in \mathbb{R}^{N\times N}$ tal que $G(i,j) > 0$ representa la existencia de un arco $i\to j$ con peso $G(i,j)$, y dos nodos $s$ (origen) y $t$ (destino), se desea encontrar:
+\begin{enumerate}[leftmargin=2em]
+  \item el coste m\'{i}nimo $d^*(s,t) = \sum_{(u,v)\in\pi^*} G(u,v)$,
+  \item la secuencia de nodos $\pi^* = [s, \dots, t]$ que lo realiza.
+\end{enumerate}
+
+El convenio del enunciado es importante: los pares $(i,j)$ con $G(i,j) = 0$ representan ausencia de arco (no autolazos de coste cero), y todos los pesos son no negativos, condici\'{o}n necesaria para la correcci\'{o}n del algoritmo.
+
+
+% =====================================================================
+%  2. FUNDAMENTOS TEÓRICOS
+% =====================================================================
+\section{Fundamentos te\'{o}ricos}
+
+\subsection{Algoritmo de Dijkstra}
+Dijkstra resuelve el problema del camino m\'{a}s corto desde un origen \'{u}nico en grafos con pesos no negativos. Mantiene tres estructuras:
+\begin{itemize}[leftmargin=2em]
+  \item un vector de \textbf{distancias} $d[v]$ con la mejor estimaci\'{o}n actual desde $s$ hasta $v$,
+  \item un vector de \textbf{predecesores} $\pi[v]$ que permite reconstruir la ruta,
+  \item un conjunto de nodos \textbf{visitados} (cerrados).
+\end{itemize}
+
+Inicialmente $d[s] = 0$, $d[v] = \infty$ para $v \neq s$, y todos los nodos est\'{a}n abiertos. El bucle principal selecciona en cada paso el nodo abierto $u$ con menor $d[u]$, lo marca como visitado y \textbf{relaja} sus aristas salientes:
+\begin{equation}
+  \text{si } d[u] + G(u,v) < d[v] \;\Longrightarrow\; d[v] \leftarrow d[u] + G(u,v),\; \pi[v] \leftarrow u
+  \label{eq:relajacion}
+\end{equation}
+
+El algoritmo termina cuando se extrae el nodo destino o cuando el menor $d$ entre los abiertos es infinito (resto inalcanzable).
+
+\subsection{Propiedades}
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Optimalidad}: con pesos no negativos, una vez se extrae un nodo $u$ del conjunto abierto, $d[u]$ es definitivo.
+  \item \textbf{Complejidad}: $O(N^2)$ con la implementaci\'{o}n por arrays empleada (selecci\'{o}n lineal del m\'{i}nimo). Una cola de prioridad reducir\'{i}a a $O((N+E)\log N)$, pero para los tama\~{n}os de \texttt{grafos.mat} no es necesario.
+  \item \textbf{Reconstrucci\'{o}n del camino}: a partir de $\pi$, retrocediendo desde $t$ hasta $s$.
+\end{itemize}
+
+\subsection{Corte temprano}
+Cuando solo interesa el camino a un destino concreto, se puede detener el bucle al extraer $u = t$. Esta optimizaci\'{o}n no cambia la complejidad asint\'{o}tica pero reduce el trabajo medio.
+
+
+% =====================================================================
+%  3. DISEÑO E IMPLEMENTACIÓN
+% =====================================================================
+\section{Dise\~{n}o e implementaci\'{o}n}
+
+\subsection{Interfaz de la funci\'{o}n}
+La funci\'{o}n se ha implementado en \matlab{} con la signatura siguiente:
+\begin{center}
+  \texttt{[coste, ruta] = dijkstra(G, origen, destino)}
+\end{center}
+
+\texttt{G} puede pasarse como matriz $N\times N$ o como el \texttt{struct} devuelto por \texttt{load('grafos.mat')}. En este \'{u}ltimo caso, se extrae autom\'{a}ticamente el campo \texttt{J} del struct (matriz de adyacencia ponderada del enunciado) o, si no existe, la primera matriz cuadrada num\'{e}rica que se localice. Esto permite invocar la funci\'{o}n con \texttt{dijkstra(load('grafos.mat'), 1, 7)} sin pasos intermedios.
+
+\subsection{Validaciones de entrada}
+Antes del bucle principal se realizan las siguientes comprobaciones:
+\begin{enumerate}[leftmargin=2em]
+  \item \texttt{G} cuadrada $N\times N$.
+  \item Costes finitos y no negativos (Dijkstra no soporta pesos negativos).
+  \item \'{I}ndices \texttt{origen} y \texttt{destino} dentro de rango.
+  \item Si \texttt{origen == destino}, se devuelve \texttt{coste = 0} y \texttt{ruta = origen} sin entrar al bucle.
+  \item Aviso si la diagonal contiene autolazos no nulos (se ignoran al recorrer vecinos por el filtro $G(u,v) > 0$).
+\end{enumerate}
+
+\subsection{Bucle principal}
+El bucle implementa fielmente el esquema cl\'{a}sico:
+\begin{enumerate}[leftmargin=2em]
+  \item Selecciona el nodo $u$ no visitado con menor $d[u]$.
+  \item Si $d[u] = \infty$, los nodos restantes son inalcanzables: termina.
+  \item Marca $u$ como visitado.
+  \item Si $u = t$, aplica corte temprano y termina.
+  \item Recorre los vecinos $v$ con $G(u,v) > 0$ y aplica la relajaci\'{o}n~\eqref{eq:relajacion}.
+\end{enumerate}
+
+\subsection{Reconstrucci\'{o}n de la ruta}
+Al finalizar, si $d[t] = \infty$ se devuelve \texttt{coste = Inf} y \texttt{ruta = []}. En caso contrario se reconstruye \texttt{ruta} retrocediendo por el vector de predecesores hasta el origen. Como salvaguarda, si en alg\'{u}n paso de la reconstrucci\'{o}n el predecesor es $0$ (situaci\'{o}n te\'{o}ricamente imposible al haber llegado al destino con coste finito) se devuelve \texttt{coste = Inf} y \texttt{ruta = []}.
+
+
+% =====================================================================
+%  4. RESULTADOS EXPERIMENTALES
+% =====================================================================
+\section{Resultados experimentales}
+
+\subsection{Datos del enunciado}
+El fichero \texttt{grafos.mat} contiene varias matrices de adyacencia (\texttt{G, H, J, F, E, K}) que representan distintos grafos sobre el mismo conjunto de nodos. Por defecto, la implementaci\'{o}n usa \texttt{J}, que corresponde al grafo del enunciado.
+
+\subsection{Ejemplo de ejecuci\'{o}n}
+La invocaci\'{o}n t\'{i}pica desde la l\'{i}nea de comandos de \matlab{} es:
+\begin{center}
+  \texttt{[coste, ruta] = dijkstra(load('grafos.mat'), 1, 7)}
+\end{center}
+
+que devuelve el coste m\'{i}nimo y la secuencia de nodos del camino \'{o}ptimo del nodo $1$ al nodo $7$.
+
+\begin{figure}[H]
+  \centering
+  \pendiente{Captura del grafo y de la ruta \'{o}ptima resaltada (por ejemplo, ejecuci\'{o}n del nodo 1 al nodo 7).}
+  \caption{Ruta \'{o}ptima calculada por Dijkstra sobre el grafo de \texttt{grafos.mat}.}
+  \label{fig:dijkstra_ruta}
+\end{figure}
+
+\subsection{Casos l\'{i}mite verificados}
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{origen == destino}: devuelve coste $0$ y ruta de un solo nodo.
+  \item Nodos sin camino: devuelve \texttt{coste = Inf}, \texttt{ruta = []}.
+  \item Pesos negativos: rechazados por las validaciones de entrada con error expl\'{i}cito.
+\end{itemize}
+
+
+% =====================================================================
+%  5. DISCUSIÓN
+% =====================================================================
+\section{Discusi\'{o}n}
+
+\subsection{Decisiones de implementaci\'{o}n}
+\paragraph{Selecci\'{o}n del m\'{i}nimo por b\'{u}squeda lineal.} Para los tama\~{n}os de los grafos del enunciado, una b\'{u}squeda lineal sobre los nodos abiertos es m\'{a}s simple y r\'{a}pida en la pr\'{a}ctica que mantener una cola de prioridad. La complejidad $O(N^2)$ es perfectamente aceptable.
+
+\paragraph{Uso de \texttt{struct} de \texttt{load}.} Aceptar directamente la salida de \texttt{load('grafos.mat')} reduce los pasos del usuario y evita errores al confundir cu\'{a}l de las matrices del fichero corresponde al grafo activo (se establece \texttt{J} como campo por defecto).
+
+\paragraph{Convenio $G(i,j)=0$ como ausencia de arco.} Es el convenio del enunciado y se respeta al recorrer vecinos con \texttt{find(G(u,:) > 0)}. La advertencia de diagonal no nula previene errores al usar matrices preparadas para otros algoritmos.
+
+\subsection{Limitaciones}
+\begin{itemize}[leftmargin=2em]
+  \item No se soportan pesos negativos. Para esos casos habr\'{i}a que usar Bellman-Ford.
+  \item No se devuelve la tabla completa de distancias a todos los nodos, solo al destino. Si fuera necesario para depurar, basta con eliminar el corte temprano y devolver \texttt{dist} y \texttt{prev}.
+  \item La implementaci\'{o}n no es \'{o}ptima para grafos muy dispersos de gran tama\~{n}o; en ese caso, una cola de prioridad ser\'{i}a preferible.
+\end{itemize}
+
+
+% =====================================================================
+%  6. CONCLUSIONES
+% =====================================================================
+\section{Conclusiones}
+Se ha implementado una versi\'{o}n robusta y autocontenida del algoritmo de Dijkstra adaptada al formato de datos del enunciado. La interfaz acepta tanto matrices como el \texttt{struct} de \texttt{load}, lo que simplifica su uso interactivo en \matlab{}. La funci\'{o}n incorpora las salvaguardas habituales (validaci\'{o}n de pesos, casos l\'{i}mite, corte temprano y manejo de inalcanzabilidad) y proporciona los dos elementos esperados: coste m\'{i}nimo y secuencia de nodos del camino \'{o}ptimo.
+
+Esta funci\'{o}n constituye la base de la planificaci\'{o}n global utilizada despu\'{e}s en Lab-MR5 (variante A* con heur\'{i}stica consistente) y en Lab-MR6 (navegaci\'{o}n aut\'{o}noma completa, donde la ruta de Dijkstra act\'{u}a como secuencia de subobjetivos para la navegaci\'{o}n local reactiva).
+
+\end{document}

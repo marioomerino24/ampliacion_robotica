@@ -1,0 +1,140 @@
+\documentclass[12pt]{article}
+
+% ===== Configuracion comun =====
+\newcommand{\commonpath}{../../common}
+\input{\commonpath/preamble}
+\input{\commonpath/commands}
+\graphicspath{{figures/}{\commonpath/img/}}
+
+\begin{document}
+
+\portada{Lab-MR6}{Navegacion autonoma}%
+        {Planificacion global (Dijkstra/A*) y navegacion local reactiva}
+
+\tableofcontents
+\clearpage
+
+% =====================================================================
+\section{Introduccion}
+
+El objetivo de esta practica es resolver la navegacion autonoma completa de un robot movil combinando dos niveles funcionales:
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Nivel global:} calcular una ruta de nodos sobre un grafo topologico.
+  \item \textbf{Nivel local:} ejecutar el movimiento real evitando obstaculos con campos potenciales.
+\end{itemize}
+
+El resultado final es un unico programa MATLAB que pide origen y destino, calcula la ruta global y recorre cada subobjetivo con comportamiento reactivo. El script informa de exito o fracaso de llegada.
+
+% =====================================================================
+\section{Implementacion}
+
+\subsection{Datos de entrada}
+Se han usado los ficheros proporcionados por el enunciado:
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{mapa2.pgm}: mapa de ocupacion.
+  \item \texttt{mapa2.m}: nodos del grafo y matriz de costes.
+\end{itemize}
+
+La matriz de nodos tiene formato $[id, x, y]$ y la matriz de costes define la adyacencia del grafo.
+
+\subsection{Planificacion global con Dijkstra}
+Para planificar el camino global se utiliza el algoritmo de Dijkstra implementado en \texttt{dijkstra.m}. Dado un nodo origen y destino, el algoritmo devuelve:
+\begin{itemize}[leftmargin=2em]
+  \item coste total acumulado,
+  \item secuencia de nodos de la ruta.
+\end{itemize}
+
+Esta ruta actua como lista de \emph{subobjetivos} para la navegacion local.
+
+\subsection{Planificacion alternativa con A*}
+Se ha implementado tambien \texttt{astar.m}. Para que la heuristica sea \textbf{consistente}, se construye una nueva matriz de costes:
+\begin{equation}
+C_{ij}^{\mathrm{eucl}} = ||p_i - p_j||_2 \quad \text{si existe arista }(i,j)
+\end{equation}
+
+y se mantiene $0$ cuando no hay arista. La heuristica usada es:
+\begin{equation}
+h(i) = ||p_i - p_{destino}||_2
+\end{equation}
+
+Con este criterio, A* reduce el numero de nodos explorados frente a Dijkstra en muchos casos, manteniendo optimalidad en el grafo euclideo.
+
+\subsection{Navegacion local por campos potenciales}
+Para cada subobjetivo global se aplica una fuerza resultante:
+\begin{equation}
+\mathbf{F}_{res} = \mathbf{F}_{att} + \mathbf{F}_{rep} + \mathbf{F}_{tan}
+\end{equation}
+
+con:
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Atractiva} hacia el subobjetivo.
+  \item \textbf{Repulsiva} frente a obstaculos detectados con \texttt{rayIntersection}.
+  \item \textbf{Tangencial} para rodear obstaculos y mitigar minimos locales.
+\end{itemize}
+
+El robot avanza en la direccion de $\mathbf{F}_{res}$ con un paso lineal acotado. Si se detecta riesgo de colision o estancamiento, se activa una maniobra de escape buscando una pose libre cercana con mayor despeje.
+
+\subsection{Integracion global-local}
+El flujo completo es:
+\begin{enumerate}[leftmargin=2em]
+  \item leer datos del mapa y del grafo,
+  \item escoger planificador (Dijkstra o A*),
+  \item calcular ruta global,
+  \item recorrer cada nodo de la ruta con campos potenciales,
+  \item mostrar trayectoria y mensaje final de exito/fallo.
+\end{enumerate}
+
+% =====================================================================
+\section{Resultados y analisis}
+
+\subsection{Caso base del enunciado}
+Desde el nodo 1 hacia la zona superior derecha, el plan global se obtiene sin problema y la ejecucion local suele alcanzar el destino cuando no aparecen cuellos estrechos.
+
+\begin{figure}[H]
+  \centering
+  \pendiente{Captura sobre \texttt{mapa2.pgm} con los nodos del grafo dibujados, la ruta global de Dijkstra (o A*) en azul y la trayectoria local roja del robot superpuesta. Caso tipico que llega al destino.}
+  \caption{Caso base: planificacion global Dijkstra/A* + navegacion local por campos potenciales.}
+  \label{fig:nav_caso_base}
+\end{figure}
+
+\subsection{Zona conflictiva entre nodos 24 y 32}
+Al forzar trayectorias que atraviesan la zona inferior derecha (entorno 24--32), el comportamiento puramente potencial puede atascarse por:
+\begin{itemize}[leftmargin=2em]
+  \item equilibrio entre atraccion y repulsion,
+  \item oscilaciones laterales en pasillos estrechos,
+  \item proximidad simultanea a obstaculos de ambos lados.
+\end{itemize}
+
+Por tanto, \textbf{no siempre} se alcanza el objetivo con la version basica. Este efecto no es un fallo de la ruta global, sino de la fase local reactiva en zonas de minima maniobrabilidad.
+
+\subsection{Mejora propuesta e implementada}
+Se implementa una mejora hibrida:
+\begin{itemize}[leftmargin=2em]
+  \item campo tangencial para favorecer rodeo de obstaculos,
+  \item deteccion de estancamiento por ventana temporal,
+  \item maniobra de escape hacia posicion libre con mayor despeje.
+\end{itemize}
+
+Esta estrategia aumenta la probabilidad de superar la zona 24--32 respecto al metodo basico de campos potenciales.
+
+\begin{figure}[H]
+  \centering
+  \pendiente{Dos subpaneles del mismo origen-destino que atraviesan la zona 24--32: izquierda sin mejora (campos potenciales puros, trayectoria atascada u oscilante); derecha con mejora (campo tangencial + maniobra de escape, trayectoria que llega al destino). Anotar iteraciones y exito/fallo.}
+  \caption{Comparativa en la zona conflictiva 24--32: navegacion basica frente a navegacion con mejora anti-minimos locales.}
+  \label{fig:nav_zona_24_32}
+\end{figure}
+
+% =====================================================================
+\section{Conclusiones}
+
+Se ha completado una solucion de navegacion autonoma con separacion clara de responsabilidades:
+\begin{itemize}[leftmargin=2em]
+  \item planificador global (Dijkstra/A*),
+  \item ejecutor local reactivo (campos potenciales mejorados).
+\end{itemize}
+
+Ademas, se ha implementado A* con heuristica consistente basada en distancia euclidea y se ha documentado la causa de fallos locales en zonas estrechas, junto con una mejora practica para mitigarlos.
+
+Como trabajo futuro, puede incorporarse un planificador local basado en ventanas dinamicas (DWA) o una capa de seguimiento de trayectoria suavizada para reducir oscilaciones en cuellos de botella.
+
+\end{document}

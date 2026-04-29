@@ -1,0 +1,427 @@
+================================================================================
+AMPLIACION DE ROBOTICA - MANIPULADORES - PRACTICA 1
+Planificacion de trayectorias cartesianas
+================================================================================
+
+FUENTE ORIGINAL
+- HTML local:
+  ../../Lab 1_ Cartesian trajectory planning - Advanced Robotics Course.html
+- URL canonica:
+  https://jmgandarias.com/advanced_robotics/lab1/
+- Repositorio base:
+  https://github.com/jmgandarias/cartesian_trajectory_planning
+
+MATERIAL AUDIOVISUAL REFERENCIADO EN EL HTML
+- installation_error.mp4
+- test_trajectory.mp4
+- result.mp4
+Nota: los videos no se han procesado; solo se deja constancia de que forman
+parte del material asociado al enunciado original.
+
+================================================================================
+1. OBJETIVO DE LA PRACTICA
+================================================================================
+
+La practica consiste en generar trayectorias cartesianas para un manipulador de
+6 GDL en ROS 2 Humble. Se trabaja en dos niveles:
+
+1. Interpolacion cartesiana entre dos poses:
+   - posicion con interpolacion lineal
+   - orientacion con quaterniones mediante slerp
+
+2. Trayectoria suavizada entre tres poses P0 -> P1 -> P2:
+   - se evita la discontinuidad de velocidad en P1
+   - se aplica un suavizado tipo Taylor en la zona de transicion
+   - cada pose cartesiana se convierte despues a espacio articular con IK (KDL)
+
+El controlador final del robot es articular por posicion.
+
+================================================================================
+2. FUNDAMENTO TEORICO
+================================================================================
+
+2.1. Interpolacion cartesiana
+
+- La posicion se interpola linealmente en el espacio cartesiano.
+- La orientacion se interpola con quaterniones.
+- En la practica se pide implementar manualmente slerp, aunque `tf2` ya incluye
+  una implementacion propia.
+
+2.2. Suavizado entre dos tramos rectilineos
+
+Al concatenar el tramo P0 -> P1 con el tramo P1 -> P2 aparece una
+discontinuidad de velocidad en P1. Para evitarlo, se define una zona de
+transicion de anchura temporal `2*tau` alrededor de P1 en la que la velocidad
+cambia suavemente.
+
+La posicion suavizada viene dada por:
+
+  p(t) = p1 - ((tau - t)^2 / (4*tau*T1)) * Delta_p1
+             + ((tau + t)^2 / (4*tau*T2)) * Delta_p2
+
+La orientacion suavizada se define como:
+
+  q(t) = q1 * q[ -((tau - t)^2 / (4*tau*T1)) * theta1, n1 ]
+            * q[  ((tau + t)^2 / (4*tau*T2)) * theta2, n2 ]
+
+Interpretacion de parametros:
+- `tau`: intervalo de transicion alrededor de P1
+- `T`: tiempo total usado en la practica para recorrer el tramo
+- `t`: instante actual dentro del bucle temporal
+
+================================================================================
+3. ENTORNO Y REQUISITOS
+================================================================================
+
+Se usa ROS 2 Humble.
+
+El enunciado original menciona como opcion el entorno
+`uma_environment_tools`, que automatiza parte de la instalacion.
+
+Comandos comentados en el material original:
+
+  create_catkin_ws
+
+Usar `advanced_robotics_ws` como nombre del workspace si se sigue esa guia.
+
+Si al usar el alias de compilacion del entorno UMA aparece un error del tipo:
+
+  'ROS colcon build is not installed'
+
+el material original propone reinstalar el entorno ROS/UMA.
+
+================================================================================
+4. INSTALACION DE DEPENDENCIAS
+================================================================================
+
+Instalar:
+
+  sudo apt install ros-${ROS_DISTRO}-xacro
+  sudo apt install ros-${ROS_DISTRO}-gazebo-ros-pkgs
+  sudo apt install ros-${ROS_DISTRO}-ros2-control \
+      ros-${ROS_DISTRO}-ros2-controllers \
+      ros-${ROS_DISTRO}-gazebo-ros2-control
+  sudo apt-get install -y \
+      ros-${ROS_DISTRO}-joint-state-publisher-gui \
+      ros-${ROS_DISTRO}-rviz2
+
+Si falla la instalacion por repositorios obsoletos:
+
+  sudo apt update
+  sudo apt upgrade
+
+================================================================================
+5. PAQUETE BASE Y COMPILACION
+================================================================================
+
+Clonar el repositorio en `src/` del workspace ROS:
+
+  git clone https://github.com/jmgandarias/cartesian_trajectory_planning
+
+Compilar:
+
+  colcon build --symlink-install
+  source install/setup.bash
+
+Si usas el entorno UMA, el enunciado tambien comenta que se puede usar el alias
+`cb`.
+
+================================================================================
+6. ESTRUCTURA DEL PAQUETE `cartesian_trajectory_planning`
+================================================================================
+
+Carpetas y ficheros relevantes segun el enunciado:
+
+- `bringup/`
+  Launch files y configuracion de `ros2_control`.
+  No hace falta modificarlo.
+
+- `config/`
+  Incluye `poses.yaml` con las poses del efector final.
+  Si forma parte del ejercicio modificarlo.
+
+- `controller/`
+  Definicion del controlador del robot con `ros2_control`.
+  No hace falta modificarlo.
+
+- `description/`
+  Descripcion URDF y visualizacion.
+  No hace falta modificarlo.
+
+- `experiment_data/`
+  Carpeta para guardar y representar datos del experimento.
+  Si forma parte del ejercicio modificarla/usar su contenido.
+
+- `hardware/`
+  Interfaz hardware para `ros2_control`.
+  No hace falta modificarlo.
+
+- `reference_generator/send_circular_trajectory.cpp`
+  Ejemplo de trayectoria circular con controlador por velocidad.
+  No hace falta modificarlo.
+
+- `reference_generator/send_linear_trajectory.cpp`
+  Ejemplo de trayectoria lineal con controlador por velocidad.
+  No hace falta modificarlo.
+
+- `reference_generator/send_trajectory.cpp`
+  Archivo principal que hay que completar en la practica.
+
+================================================================================
+7. DEMO INICIAL
+================================================================================
+
+En una terminal:
+
+  ros2 launch cartesian_trajectory_planning r6bot_controller.launch.py
+
+En otra terminal:
+
+  ros2 launch cartesian_trajectory_planning send_linear_trajectory.launch.py
+
+En RViz, para ver la estela del efector final:
+- ir a `RobotModel > Links > tool0`
+- activar `Show Trail`
+
+Tambien se puede probar la demo circular:
+
+  ros2 launch cartesian_trajectory_planning send_circular_trajectory.launch.py
+
+El enunciado aclara que estas demos funcionan con un controlador articular por
+velocidad y una IK ya implementada. La practica, en cambio, pide trabajar con
+un controlador articular por posicion.
+
+================================================================================
+8. ARCHIVO PRINCIPAL A ENTENDER: `send_trajectory.cpp`
+================================================================================
+
+El nodo:
+- inicializa ROS 2
+- crea un publisher a `/r6bot_controller/joint_trajectory`
+- construye la cadena cinematica desde `base_link` hasta `tool0`
+- crea los solvers KDL:
+  - FK
+  - IK diferencial
+  - IK posicional
+- carga `pose0`, `pose1` y `pose2` desde `config/poses.yaml`
+- valida los extremos del Ejercicio 1
+- si `exercise_2 == true`, genera toda la trayectoria, guarda CSV y publica
+
+Funciones auxiliares ya proporcionadas:
+- `ParsePoseMatrix(...)`
+- `MuliplyQuaternions(...)`
+- `InverseQuaternion(...)`
+- `rot2Quat(...)`
+
+Funciones a implementar:
+- `PoseInterpolation(...)`
+- `ComputeNextCartesianPose(...)`
+
+================================================================================
+9. POSES DEL ENUNCIADO
+================================================================================
+
+Se dan las siguientes matrices homogeneas:
+
+P0 =
+  [ 0   1   0  -0.187 ]
+  [ 1   0   0   1.038 ]
+  [ 0   0  -1   0.307 ]
+  [ 0   0   0   1     ]
+
+P1 =
+  [ 0   0  -1   0.150 ]
+  [ -1  0   0   0.638 ]
+  [ 0   1   0   0.607 ]
+  [ 0   0   0   1     ]
+
+P2 =
+  [ 0   0  -1  -0.950 ]
+  [ 0   1   0   0.638 ]
+  [ 1   0   0   0.607 ]
+  [ 0   0   0   1     ]
+
+================================================================================
+10. EJERCICIO 1: INTERPOLACION CARTESIANA
+================================================================================
+
+Implementar:
+
+  std::pair<tf2::Vector3, tf2::Quaternion>
+  PoseInterpolation(const Eigen::Matrix4d &start_pose,
+                    const Eigen::Matrix4d &end_pose,
+                    double lambda)
+
+Requisitos:
+- `lambda` pertenece a [0, 1]
+- interpolacion lineal de la posicion
+- interpolacion slerp de la orientacion
+- devolver:
+  - `tf2::Vector3 p_interp`
+  - `tf2::Quaternion q_interp`
+
+El codigo de comprobacion llama a:
+- `PoseInterpolation(pose0, pose1, 0.0)`
+- `PoseInterpolation(pose0, pose1, 1.0)`
+- `PoseInterpolation(pose1, pose2, 0.0)`
+- `PoseInterpolation(pose1, pose2, 1.0)`
+
+Por tanto:
+- `p0, q0` deben coincidir con `pose0`
+- `p1, q1` deben coincidir con `pose1`
+- `p2, q2` deben coincidir con el inicio del segundo tramo, o sea `pose1`
+- `p3, q3` deben coincidir con `pose2`
+
+RESULTADOS ESPERADOS DEL EJERCICIO 1
+
+Al lanzar el nodo, si esta bien implementado, deben salir:
+
+  [send_trajectory-1] p0: -0.187000, 1.038000, 0.307000
+  [send_trajectory-1] q0: 0.707107, 0.707107, 0.000000, 0.000000
+  [send_trajectory-1] p1:  0.150000, 0.638000, 0.607000
+  [send_trajectory-1] q1:  0.500000, -0.500000, -0.500000, 0.500000
+  [send_trajectory-1] p2:  0.150000, 0.638000, 0.607000
+  [send_trajectory-1] q2:  0.500000, -0.500000, -0.500000, 0.500000
+  [send_trajectory-1] p3: -0.950000, 0.638000, 0.607000
+  [send_trajectory-1] q3:  0.000000, -0.707107, 0.000000, 0.707107
+
+Tip del material original:
+- comprobar la correspondencia entre quaternion y rotacion con:
+  https://www.andre-gaschler.com/rotationconverter/
+
+================================================================================
+11. EJERCICIO 2: GENERACION DE TRAYECTORIA SUAVIZADA
+================================================================================
+
+Primero hay que activar:
+
+  bool exercise_2 = true;
+
+Despues implementar:
+
+  std::pair<tf2::Vector3, tf2::Quaternion>
+  ComputeNextCartesianPose(const Eigen::Matrix4d &pose_0,
+                           const Eigen::Matrix4d &pose_1,
+                           const Eigen::Matrix4d &pose_2,
+                           double tau,
+                           double T,
+                           double t)
+
+Esta funcion debe devolver la pose cartesiana suavizada para el movimiento:
+
+  P0 -> P2 pasando por P1
+
+El enunciado original usa por defecto:
+- `tau = 1`
+- `T = 10`
+- `sample_time = 0.1`
+
+Preguntas que pide contestar el enunciado:
+- Que pasa al cambiar `tau`?
+- Que pasa al cambiar `T`?
+- Se puede cambiar la velocidad del robot? Como?
+
+================================================================================
+12. BUCLE TEMPORAL Y PUBLICACION
+================================================================================
+
+La generacion completa hace lo siguiente:
+
+1. Recorre `t` desde `-T` hasta `T` con paso `sample_time`.
+2. Calcula `p_interp` y `q_interp` con `ComputeNextCartesianPose(...)`.
+3. Convierte el quaternion a `roll, pitch, yaw`.
+4. Guarda una linea CSV con:
+   `t, X, Y, Z, roll, pitch, yaw`
+5. Construye una pose deseada del efector final en KDL.
+6. Resuelve IK para obtener las articulaciones.
+7. Rellena `trajectory_msg.points`.
+8. Publica la trayectoria solo cuando haya subscriber.
+
+El nodo publica en:
+
+  /r6bot_controller/joint_trajectory
+
+Comportamientos destacados:
+- si no se generan puntos validos, el programa termina con error
+- espera a que haya subscriber antes de publicar
+- la cabecera se publica con `now + 0.2 s` para dar margen al controlador
+
+================================================================================
+13. DATOS DE SALIDA Y GRAFICAS
+================================================================================
+
+La practica guarda el resultado en:
+
+  YOUR_ROS_ws/src/cartesian_trajectory_planning/experiment_data
+
+Formato del CSV:
+
+  t, X, Y, Z, roll, pitch, yaw
+
+Nombre del fichero:
+
+  data_YearMonthDay_HourMinuteSecond.csv
+
+Graficado con el script del propio paquete:
+
+  python3 plot_data.py
+
+o para un fichero concreto:
+
+  python3 plot_data.py NAME_OF_THE_FILE.csv
+
+Tambien se puede usar MATLAB u otra herramienta.
+
+================================================================================
+14. RESULTADOS ESPERADOS DEL EJERCICIO 2
+================================================================================
+
+El material original muestra como resultado esperado:
+- un video de la trayectoria completa (`result.mp4`)
+- una grafica de posicion (`position.svg`)
+- una grafica de orientacion (`orientation.svg`)
+
+La idea es observar una transicion suave en la zona de paso por P1, sin cambio
+brusco de velocidad.
+
+================================================================================
+15. EXTRA OPCIONAL
+================================================================================
+
+15.1. Comparar nuestro slerp con el de tf2
+- Analizar diferencias entre la implementacion manual del Ejercicio 1 y la
+  definida en `tf2`.
+
+15.2. Pick & Place
+
+Modificar la aplicacion para hacer una tarea pick & place incluyendo:
+- `P_pick`
+- `P_place`
+- `P_pick^appro`
+- `P_place^appro`
+- `P_ini` (igual que `P0`)
+
+Secuencia pedida:
+1. Ir de `P_ini` a `P_pick` pasando por `P_pick^appro` con suavizado.
+2. Volver de `P_pick` a `P_ini` pasando por `P_pick^appro`.
+3. Ir de `P_ini` a `P_place` pasando por `P_place^appro`.
+4. Volver de `P_place` a `P_ini` pasando por `P_place^appro`.
+
+================================================================================
+16. RESUMEN OPERATIVO
+================================================================================
+
+Si quieres empezar directamente por el desarrollo:
+
+1. Instala dependencias ROS 2.
+2. Clona `cartesian_trajectory_planning`.
+3. Compila el workspace.
+4. Revisa `config/poses.yaml`.
+5. Implementa `PoseInterpolation(...)`.
+6. Comprueba que salen los valores esperados del Ejercicio 1.
+7. Activa `exercise_2 = true`.
+8. Implementa `ComputeNextCartesianPose(...)`.
+9. Ejecuta la trayectoria completa.
+10. Revisa el CSV y las graficas.
+
+================================================================================

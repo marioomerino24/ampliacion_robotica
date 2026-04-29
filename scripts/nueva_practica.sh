@@ -6,8 +6,8 @@
 #   ./scripts/nueva_practica.sh <bloque> <nombre_dir> "<titulo_completo>"
 #
 # Ejemplo:
-#   ./scripts/nueva_practica.sh robotica_movil labmr_2i "LabMR 2-I: Planificacion de trayectorias"
-#   ./scripts/nueva_practica.sh manipuladores labman_1i "LabMAN 1-I: Cinematica directa"
+#   ./scripts/nueva_practica.sh robotica_movil practica_2_percepcion_del_entorno "Práctica 2: Percepción del entorno"
+#   ./scripts/nueva_practica.sh manipuladores practica_1_cinematica_directa "Práctica 1: Cinemática directa"
 ###############################################################################
 
 set -euo pipefail
@@ -21,8 +21,8 @@ if [[ $# -ne 3 ]]; then
     echo "Bloques disponibles: robotica_movil, manipuladores"
     echo ""
     echo "Ejemplos:"
-    echo "  $0 robotica_movil labmr_2i \"LabMR 2-I: Planificacion de trayectorias\""
-    echo "  $0 manipuladores labman_1i \"LabMAN 1-I: Cinematica directa\""
+    echo "  $0 robotica_movil practica_2_percepcion_del_entorno \"Práctica 2: Percepción del entorno\""
+    echo "  $0 manipuladores practica_1_cinematica_directa \"Práctica 1: Cinemática directa\""
     exit 1
 fi
 

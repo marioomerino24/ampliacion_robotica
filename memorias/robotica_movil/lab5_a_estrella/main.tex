@@ -1,0 +1,178 @@
+\documentclass[12pt]{article}
+
+% ===== Configuración común =====
+\newcommand{\commonpath}{../../common}
+\input{\commonpath/preamble}
+\input{\commonpath/commands}
+\graphicspath{{figures/}{\commonpath/img/}}
+
+% ===== Documento =====
+\begin{document}
+
+\portada{Lab-MR5}{Planificaci\'{o}n de caminos II}%
+        {Algoritmo A* con heur\'{i}stica euclidea consistente}
+
+\tableofcontents
+\clearpage
+
+
+% =====================================================================
+%  1. INTRODUCCIÓN
+% =====================================================================
+\section{Introducci\'{o}n}
+
+\subsection{Objetivo de la pr\'{a}ctica}
+El objetivo es implementar el algoritmo \textbf{A*} para calcular la ruta de coste m\'{i}nimo entre dos nodos de un grafo topol\'{o}gico, incorporando una \textbf{heur\'{i}stica consistente} que permita reducir el n\'{u}mero de nodos explorados respecto a Dijkstra (Lab-MR4) sin perder optimalidad.
+
+\subsection{Descripci\'{o}n del problema}
+La formulaci\'{o}n del grafo es la misma que en Lab-MR4: matriz $G \in \mathbb{R}^{N\times N}$ con $G(i,j) > 0$ indicando la existencia del arco $i\to j$ y su peso, y dos nodos $s$ (origen) y $t$ (destino). La diferencia es que se dispone, adem\'{a}s, de las \textbf{coordenadas geom\'{e}tricas} de los nodos en el espacio (matriz \texttt{nodos} con $x$ e $y$ por columnas), lo que permite definir una heur\'{i}stica admisible y consistente basada en la distancia eucl\'{i}dea.
+
+
+% =====================================================================
+%  2. FUNDAMENTOS TEÓRICOS
+% =====================================================================
+\section{Fundamentos te\'{o}ricos}
+
+\subsection{Algoritmo A*}
+A* expande nodos siguiendo el orden de la funci\'{o}n de evaluaci\'{o}n
+\begin{equation}
+  f(v) = g(v) + h(v),
+  \label{eq:f_astar}
+\end{equation}
+
+donde:
+\begin{itemize}[leftmargin=2em]
+  \item $g(v)$ es el coste real acumulado desde el origen $s$ hasta $v$,
+  \item $h(v)$ es una estimaci\'{o}n heur\'{i}stica del coste de $v$ a $t$.
+\end{itemize}
+
+Mantiene un conjunto \textbf{abierto} (nodos generados pero no expandidos) y un conjunto \textbf{cerrado} (nodos ya expandidos). En cada iteraci\'{o}n extrae del abierto el nodo de menor $f$, lo cierra y relaja sus aristas salientes. Cuando se cierra el destino, la b\'{u}squeda termina.
+
+\subsection{Admisibilidad y consistencia}
+Una heur\'{i}stica $h$ es:
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{admisible} si $h(v) \leq h^*(v)$, donde $h^*(v)$ es el coste real m\'{i}nimo hasta el destino. Garantiza optimalidad.
+  \item \textbf{consistente} (o mon\'{o}tona) si $h(u) \leq G(u,v) + h(v)$ para todo arco $u\to v$. La consistencia implica admisibilidad y, adem\'{a}s, garantiza que un nodo no necesita reaperturarse una vez cerrado.
+\end{itemize}
+
+\subsection{Heur\'{i}stica eucl\'{i}dea consistente}
+La heur\'{i}stica empleada es la distancia eucl\'{i}dea entre el nodo y el destino:
+\begin{equation}
+  h(i) = \lVert p_i - p_t \rVert_2,
+  \label{eq:h_eucl}
+\end{equation}
+
+con $p_i = (x_i, y_i)$. Para que esta heur\'{i}stica sea \textbf{consistente} respecto a la matriz de costes utilizada, los pesos deben ser \textbf{compatibles} con la m\'{e}trica eucl\'{i}dea, es decir, satisfacer $G(u,v) \geq \lVert p_u - p_v\rVert_2$ para todo arco. Cuando la matriz original del enunciado no cumple esta propiedad (porque sus pesos son arbitrarios), se construye una matriz alternativa:
+\begin{equation}
+  C^{\text{eucl}}_{ij} = \begin{cases} \lVert p_i - p_j\rVert_2 & \text{si existe arco } (i,j),\\[2pt] 0 & \text{en caso contrario,}\end{cases}
+  \label{eq:matriz_eucl}
+\end{equation}
+
+manteniendo la \textbf{misma topolog\'{i}a} pero con costes que coinciden con la m\'{e}trica de la heur\'{i}stica. As\'{i}, A* sobre $C^{\text{eucl}}$ con $h$ eucl\'{i}dea es \'{o}ptimo y consistente.
+
+
+% =====================================================================
+%  3. DISEÑO E IMPLEMENTACIÓN
+% =====================================================================
+\section{Dise\~{n}o e implementaci\'{o}n}
+
+\subsection{Interfaz de la funci\'{o}n}
+La funci\'{o}n se ha implementado en \matlab{} con la signatura:
+\begin{center}
+  \texttt{[coste, ruta] = astar(G, nodos, origen, destino)}
+\end{center}
+
+donde \texttt{nodos} es una matriz $N\times 2$ (o $N\times M$ con $x,y$ en las dos primeras columnas) con las coordenadas geom\'{e}tricas necesarias para la heur\'{i}stica.
+
+\subsection{Validaciones de entrada}
+Antes del bucle principal:
+\begin{enumerate}[leftmargin=2em]
+  \item \texttt{G} cuadrada $N\times N$, con costes finitos y no negativos.
+  \item \texttt{nodos} con $N$ filas y al menos $2$ columnas.
+  \item \texttt{origen} y \texttt{destino} dentro del rango v\'{a}lido.
+  \item Si \texttt{origen == destino}, se devuelven coste $0$ y ruta unipunto sin entrar al bucle.
+\end{enumerate}
+
+\subsection{Estructuras del algoritmo}
+Se mantienen cuatro vectores de tama\~{n}o $N$:
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{g\_score(v)}: mejor coste real conocido de $s$ a $v$. Inicialmente $\infty$, salvo \texttt{g\_score(origen) = 0}.
+  \item \texttt{f\_score(v) = g\_score(v) + h(v)}: criterio de expansi\'{o}n.
+  \item \texttt{prev(v)}: predecesor en la ruta \'{o}ptima parcial.
+  \item \texttt{abierto(v)}, \texttt{cerrado(v)}: m\'{a}scaras booleanas.
+\end{itemize}
+
+\subsection{Selecci\'{o}n del nodo a expandir}
+En cada iteraci\'{o}n se busca el nodo abierto con menor $f$. En caso de \textbf{empate} en $f$, se rompe el desempate por menor $h$, lo que prioriza a los candidatos m\'{a}s cercanos al destino. Esta heur\'{i}stica de desempate suele reducir el n\'{u}mero de nodos expandidos en grafos con costes equiparables.
+
+\subsection{Relajaci\'{o}n y reconstrucci\'{o}n}
+Para cada vecino $v$ con $G(u,v) > 0$ que no est\'{e} cerrado:
+\begin{itemize}[leftmargin=2em]
+  \item se calcula $g_{\text{tent}} = g(u) + G(u,v)$,
+  \item si $v$ no est\'{a} abierto, se a\~{n}ade,
+  \item si $g_{\text{tent}} \geq g(v)$, se descarta el nuevo camino,
+  \item en caso contrario, se actualizan $g(v)$, $f(v)$ y $\pi[v] = u$.
+\end{itemize}
+
+La reconstrucci\'{o}n de la ruta es id\'{e}ntica a la de Dijkstra: se retrocede desde $t$ por el vector de predecesores hasta llegar a $s$. Si en alg\'{u}n paso se encuentra un predecesor inv\'{a}lido se devuelve \texttt{coste = Inf} y \texttt{ruta = []}.
+
+
+% =====================================================================
+%  4. RESULTADOS EXPERIMENTALES
+% =====================================================================
+\section{Resultados experimentales}
+
+\subsection{Construcci\'{o}n del grafo eucl\'{i}deo}
+A partir de la matriz original del enunciado se construye $C^{\text{eucl}}$ seg\'{u}n la ecuaci\'{o}n~\eqref{eq:matriz_eucl}. La topolog\'{i}a (qu\'{e} pares $(i,j)$ tienen arco) se preserva, y los pesos se sustituyen por distancias eucl\'{i}deas. Esto se realiza una sola vez al principio del script de evaluaci\'{o}n.
+
+\subsection{Comparativa A* vs.\ Dijkstra}
+La ruta resultante de A* sobre $C^{\text{eucl}}$ y la de Dijkstra sobre la misma matriz coinciden, como debe ser por la consistencia de la heur\'{i}stica. La diferencia se observa en el n\'{u}mero de nodos expandidos: A* descarta tempranamente las regiones del grafo cuyo $f$ supera el coste \'{o}ptimo conocido al destino.
+
+\begin{figure}[H]
+  \centering
+  \pendiente{Captura comparativa de los nodos explorados por Dijkstra y por A* sobre el mismo grafo y mismo par origen-destino.}
+  \caption{Comparativa cualitativa de los nodos expandidos por Dijkstra y A*.}
+  \label{fig:astar_vs_dijkstra}
+\end{figure}
+
+\subsection{Casos l\'{i}mite verificados}
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{origen == destino}: coste $0$ y ruta de un solo nodo.
+  \item Destino inalcanzable: \texttt{coste = Inf}, \texttt{ruta = []}.
+  \item Heur\'{i}stica nula ($h \equiv 0$): A* degenera a Dijkstra. Sirve como prueba de regresi\'{o}n.
+\end{itemize}
+
+
+% =====================================================================
+%  5. DISCUSIÓN
+% =====================================================================
+\section{Discusi\'{o}n}
+
+\subsection{Por qu\'{e} construir $C^{\text{eucl}}$}
+Los pesos originales del enunciado no necesariamente coinciden con la distancia eucl\'{i}dea entre nodos. Aplicar A* directamente sobre la matriz original con $h$ eucl\'{i}dea \textbf{podr\'{i}a violar la consistencia} (e incluso la admisibilidad), lo que se traducir\'{i}a en rutas sub\'{o}ptimas. La construcci\'{o}n del grafo eucl\'{i}deo es la forma m\'{a}s sencilla de garantizar las propiedades te\'{o}ricas del algoritmo sobre estos datos.
+
+\subsection{Alternativas a la construcci\'{o}n de $C^{\text{eucl}}$}
+\begin{itemize}[leftmargin=2em]
+  \item Escalar la heur\'{i}stica para que $h(i) \leq G(u,v) + h(v)$ siempre. Garantiza admisibilidad pero no consistencia, y no aporta ventajas pr\'{a}cticas.
+  \item Usar otra m\'{e}trica (Manhattan, Chebyshev) si el grafo lo justifica. En este caso, la disposici\'{o}n libre de los nodos hace m\'{a}s natural la m\'{e}trica eucl\'{i}dea.
+\end{itemize}
+
+\subsection{Complejidad y rendimiento}
+La complejidad asint\'{o}tica es la misma que la de Dijkstra ($O(N^2)$ con b\'{u}squeda lineal del m\'{i}nimo), pero el n\'{u}mero efectivo de nodos expandidos suele ser menor. La diferencia se nota especialmente cuando el destino est\'{a} alejado del origen y el grafo tiene muchas ramificaciones poco prometedoras.
+
+\subsection{Limitaciones}
+\begin{itemize}[leftmargin=2em]
+  \item Requiere coordenadas geom\'{e}tricas de los nodos. No es aplicable a grafos puramente abstractos sin embedding.
+  \item El uso de matrices completas y b\'{u}squeda lineal del m\'{i}nimo no escala a grafos muy grandes; ser\'{i}a recomendable una cola de prioridad y representaci\'{o}n dispersa.
+\end{itemize}
+
+
+% =====================================================================
+%  6. CONCLUSIONES
+% =====================================================================
+\section{Conclusiones}
+Se ha implementado A* con heur\'{i}stica eucl\'{i}dea consistente sobre el grafo del enunciado, garantizando optimalidad mediante la construcci\'{o}n de una matriz de costes compatible con la m\'{e}trica de la heur\'{i}stica. La interfaz es paralela a la de Lab-MR4 (\texttt{dijkstra}), lo que facilita comparaciones directas.
+
+El algoritmo se reutiliza directamente en Lab-MR6, donde act\'{u}a como planificador global alternativo a Dijkstra para suministrar la secuencia de subobjetivos a la navegaci\'{o}n reactiva por campos potenciales. La elecci\'{o}n entre Dijkstra y A* es transparente para el usuario y, en los grafos del enunciado, ambas rutas son equivalentes en coste y solo difieren en la fracci\'{o}n del grafo realmente explorada.
+
+\end{document}
