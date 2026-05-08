@@ -32,7 +32,7 @@ Las memorias de cada practica estan disponibles como PDF compilado dentro del re
 
 | Práctica | Titulo | PDF | Video | Estado |
 |-----|--------|-----|-------|--------|
-| Práctica 1-I | Seguimiento de caminos explícitos | [`main.pdf`](memorias/robotica_movil/lab1-I_caminos_explicitos/main.pdf) | - | Completada |
+| Práctica 1-I | Seguimiento de caminos explícitos | [`main.pdf`](memorias/robotica_movil/lab1-I_caminos_explicitos/main.pdf) | [Drive](https://drive.google.com/drive/folders/1ne8Xvr6KsiIRRmqDgXzSwK89ENE5QpWu?usp=drive_link) | Completada |
 | Práctica 1-II | Seguimiento de caminos implícitos | [`main.pdf`](memorias/robotica_movil/lab1-II_caminos_implicitos/main.pdf) | [Drive](https://drive.google.com/file/d/1I6tOLcURG61m_-ohzUyiiBDkwep3uvLk/view) | Completada |
 | Práctica 2 | Percepción del entorno | [`main.pdf`](memorias/robotica_movil/lab2_percepcion/main.pdf) | [Drive](https://drive.google.com/file/d/1FnFhbGMeaFnEXlVtZfJK5_TjgRE5hLpe/view) | Completada |
 | Práctica 3 | Evitar obstáculos mediante campos potenciales | [`main.pdf`](memorias/robotica_movil/lab3_campos_potenciales/main.pdf) | - | Esqueleto |
