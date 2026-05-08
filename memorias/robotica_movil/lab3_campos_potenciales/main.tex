@@ -12,228 +12,73 @@
 % ===== Documento =====
 \begin{document}
 
-\portada{Lab-MR 3}{Navegaci\'{o}n reactiva con campos potenciales}%
-        {Navegaci\'{o}n mediante campos potenciales artificiales}
+\portada{Lab-MR 3}{Evitar obst\'{a}culos mediante campos potenciales}%
+        {Navegaci\'{o}n reactiva por campos potenciales artificiales}
 
-% =====================================================================
 \tableofcontents
 \clearpage
 
 
 % =====================================================================
-%  1. INTRODUCCIÓN
+%  1. OBJETIVO
 % =====================================================================
-\section{Introducci\'{o}n}
-
-\subsection{Objetivo de la pr\'{a}ctica}
-El objetivo de esta pr\'{a}ctica es implementar una estrategia de \textbf{navegaci\'{o}n reactiva} basada en \textbf{campos potenciales artificiales}. A partir de un mapa de ocupaci\'{o}n binario y de un l\'{a}ser de barrido simulado, el robot debe alcanzar un destino seleccionado por el usuario evitando los obst\'{a}culos detectados en cada iteraci\'{o}n, sin disponer de un plan global previo.
-
-\subsection{Descripci\'{o}n del problema}
-Dado un mapa de ocupaci\'{o}n y dos puntos $q_\text{ini}$ (origen) y $q_\text{dest}$ (destino) seleccionados sobre dicho mapa, el robot debe construir en cada paso una direcci\'{o}n de avance que combine:
-\begin{enumerate}[leftmargin=2em]
-  \item una \textbf{atracci\'{o}n} hacia el destino,
-  \item una \textbf{repulsi\'{o}n} ejercida por los obst\'{a}culos m\'{a}s cercanos.
-\end{enumerate}
-
-La trayectoria se construye paso a paso, sin almacenar memoria del mapa global, lo que la convierte en un m\'{e}todo puramente \textbf{reactivo}. La eficacia depende cr\'{i}ticamente de los coeficientes $\alpha$ y $\beta$ y del rango de influencia $D$, y el m\'{e}todo es susceptible a quedar atrapado en \textbf{m\'{i}nimos locales}, que se detectan por l\'{i}mite de iteraciones.
+\section{Objetivo}
+Completar el script \texttt{plantilla\_campos\_potenciales.m} para que el robot navegue de forma reactiva desde un origen hasta un destino sobre el mapa \texttt{mapa1\_150.png}, utilizando \'{u}nicamente las fuerzas de atracci\'{o}n al objetivo y de repulsi\'{o}n de los obst\'{a}culos detectados en cada iteraci\'{o}n. Realizar varios experimentos con diferentes or\'{i}genes y destinos, probar configuraciones de m\'{i}nimo local, y responder a la pregunta del enunciado: \textbf{¿puede el m\'{e}todo encontrar la soluci\'{o}n cambiando solo $\alpha$, $\beta$ o el rango de influencia?}
 
 
 % =====================================================================
-%  2. FUNDAMENTOS TEÓRICOS
+%  2. IMPLEMENTACIÓN
 % =====================================================================
-\section{Fundamentos te\'{o}ricos}
+\section{Implementaci\'{o}n}
 
-\subsection{Modelo de planta y sensor}
-Se considera un robot puntual con pose $q = (x, y, \theta)$ que se desplaza un paso fijo $v$ en la direcci\'{o}n indicada por la fuerza resultante. Como sensor, se simula un \textbf{l\'{a}ser de barrido} mediante \texttt{rayIntersection} sobre el mapa de ocupaci\'{o}n, con resoluci\'{o}n $1^\circ$ en el rango $[-\pi/2, \pi/2]$ y un alcance m\'{a}ximo $r_\text{max} = \SI{10}{\meter}$.
+El c\'{o}digo a completar es el bucle de control del robot dentro de la plantilla proporcionada. La estructura de la plantilla (carga del mapa, selecci\'{o}n con \texttt{ginput}, llamada a \texttt{SimulaLidar}, dibujado incremental con \texttt{plot}/\texttt{drawnow}) se mantiene tal cual; solo se a\~{n}aden los c\'{a}lculos de fuerzas y la actualizaci\'{o}n de la pose. Las decisiones no obvias son:
 
-\subsection{Campo atractivo}
-La componente atractiva tira del robot hacia el destino. Se utiliza una formulaci\'{o}n unitaria normalizada por la distancia al objetivo:
-\begin{equation}
-  \mathbf{F}_\text{atr} = \alpha\,\frac{q_\text{dest} - q}{\lVert q_\text{dest} - q\rVert}
-  \label{eq:f_atr}
-\end{equation}
+\paragraph{Filtrado de \texttt{NaN} antes de calcular la repulsi\'{o}n.} \texttt{SimulaLidar} (envoltura de \texttt{rayIntersection}) devuelve \texttt{NaN} para los rayos que no impactan dentro del alcance. Si no se descartan con una m\'{a}scara l\'{o}gica antes de calcular distancias, las operaciones vectoriales se contaminan y la repulsi\'{o}n pierde sentido.
 
-con $\alpha > 0$ el coeficiente de atracci\'{o}n. La direcci\'{o}n de $\mathbf{F}_\text{atr}$ apunta siempre al destino y su magnitud es constante e igual a $\alpha$.
+\paragraph{Recorte por rango de influencia.} La f\'{o}rmula repulsiva del enunciado se anula exactamente en $d = D$, pero evaluarla para todos los rayos del l\'{a}ser es innecesario. Se filtran previamente los obst\'{a}culos a $d_i < D$ y solo se itera sobre ellos.
 
-\subsection{Campo repulsivo}
-Cada obst\'{a}culo $q_{\text{obs},i}$ situado a distancia $d_i = \lVert q - q_{\text{obs},i}\rVert$ ejerce sobre el robot una fuerza repulsiva si $d_i < D$:
-\begin{equation}
-  \mathbf{F}_{\text{rep},i} = \beta\,\left(\frac{1}{d_i} - \frac{1}{D}\right)\,\frac{1}{d_i^2}\,\frac{q - q_{\text{obs},i}}{\lVert q - q_{\text{obs},i}\rVert}
-  \label{eq:f_rep_i}
-\end{equation}
-
-Esta expresi\'{o}n cumple las propiedades exigidas:
-\begin{itemize}[leftmargin=2em]
-  \item es \textbf{infinita} cuando $d_i \to 0$ (frontera del obst\'{a}culo),
-  \item se anula \textbf{exactamente} cuando $d_i = D$ (frontera de influencia),
-  \item es siempre \textbf{repulsiva} (vector unitario desde el obst\'{a}culo hacia el robot).
-\end{itemize}
-
-La fuerza repulsiva total se obtiene sumando sobre todos los obst\'{a}culos dentro del rango de influencia:
-\begin{equation}
-  \mathbf{F}_\text{rep} = \sum_{i\,:\,d_i < D} \mathbf{F}_{\text{rep},i}
-  \label{eq:f_rep_total}
-\end{equation}
-
-\subsection{Ley de movimiento}
-La fuerza resultante $\mathbf{F}_\text{res} = \mathbf{F}_\text{atr} + \mathbf{F}_\text{rep}$ define la direcci\'{o}n de avance:
-\begin{equation}
-  \theta = \operatorname{atan2}(F_{\text{res},y},\, F_{\text{res},x})
-  \label{eq:theta}
-\end{equation}
-
-y el robot ejecuta un paso de longitud $v$ en esa direcci\'{o}n:
-\begin{equation}
-  q_{k+1} = \begin{bmatrix} x_k + v\cos\theta \\ y_k + v\sin\theta \\ \theta \end{bmatrix}
-  \label{eq:movimiento}
-\end{equation}
-
-El bucle se repite hasta que $\lVert q_\text{dest} - q\rVert < v$ (destino alcanzado) o hasta superar un l\'{i}mite de $1000$ iteraciones, en cuyo caso se asume que el robot ha quedado atrapado en un \textbf{m\'{i}nimo local}.
+\paragraph{Detecci\'{o}n de m\'{i}nimo local por l\'{i}mite de iteraciones.} Se considera que el robot ha quedado atrapado cuando alcanza $1000$ iteraciones sin satisfacer la condici\'{o}n de llegada $\lVert q_\text{dest} - q\rVert < v$. La plantilla ya emite el mensaje correspondiente.
 
 
 % =====================================================================
-%  3. DISEÑO E IMPLEMENTACIÓN
+%  3. PRUEBAS
 % =====================================================================
-\section{Dise\~{n}o e implementaci\'{o}n}
+\section{Pruebas}
 
-\subsection{Arquitectura de la soluci\'{o}n}
-La soluci\'{o}n es un \'{u}nico script de \matlab{} (\texttt{plantilla\_campos\_potenciales.m}) organizado en cuatro bloques:
-\begin{enumerate}[leftmargin=2em]
-  \item Carga del mapa y selecci\'{o}n interactiva de origen y destino.
-  \item Definici\'{o}n de par\'{a}metros del veh\'{i}culo y del sensor.
-  \item Bucle de control: lectura del l\'{a}ser, c\'{a}lculo de fuerzas, actualizaci\'{o}n de pose y dibujado incremental.
-  \item Verificaci\'{o}n final: destino alcanzado o m\'{i}nimo local.
-\end{enumerate}
-
-\subsection{Par\'{a}metros utilizados}
-La Tabla~\ref{tab:parametros_p3} resume los valores empleados, todos ellos constantes durante la ejecuci\'{o}n.
-
-\begin{table}[H]
-  \centering
-  \caption{Par\'{a}metros del controlador de campos potenciales.}
-  \label{tab:parametros_p3}
-  \begin{tabularx}{0.98\linewidth}{l c X}
-    \toprule
-    \textbf{Par\'{a}metro} & \textbf{Valor} & \textbf{Descripci\'{o}n} \\
-    \midrule
-    $v$                  & $0.4$  & Paso lineal del robot por iteraci\'{o}n. \\
-    $D$                  & $1.5$  & Rango de influencia del campo repulsivo. \\
-    $\alpha$             & $1$    & Coeficiente de atracci\'{o}n. \\
-    $\beta$              & $100$  & Coeficiente de repulsi\'{o}n. \\
-    $r_\text{max}$       & $10$   & Alcance m\'{a}ximo del l\'{a}ser. \\
-    $\Delta\alpha_\text{laser}$ & $1^\circ$ & Resoluci\'{o}n angular del barrido. \\
-    rango angular        & $[-\pi/2,\,\pi/2]$ & Sector explorado por el l\'{a}ser. \\
-    iter. m\'{a}x.       & $1000$ & L\'{i}mite para detectar m\'{i}nimos locales. \\
-    \bottomrule
-  \end{tabularx}
-\end{table}
-
-\subsection{Procesamiento sensorial}
-En cada iteraci\'{o}n se llama a \texttt{SimulaLidar}, que envuelve a \texttt{rayIntersection} y devuelve, para cada \'{a}ngulo, las coordenadas absolutas $(x_\text{obs}, y_\text{obs})$ del primer impacto o \texttt{NaN} si el rayo no intercepta nada dentro del alcance. El procesamiento aplica dos filtros sobre las salidas del sensor:
-\begin{enumerate}[leftmargin=2em]
-  \item \textbf{Eliminaci\'{o}n de \texttt{NaN}}: los rayos sin impacto se descartan mediante una m\'{a}scara l\'{o}gica.
-  \item \textbf{Recorte por rango}: solo se mantienen los obst\'{a}culos a distancia $d_i < D$, ya que la ecuaci\'{o}n~\eqref{eq:f_rep_i} se anula fuera de ese rango.
-\end{enumerate}
-
-Este preprocesado es fundamental: si no se filtran los \texttt{NaN} la suma vectorial de la repulsi\'{o}n se contamina, y si no se acota por $D$ se incluyen contribuciones nulas que aumentan el coste por iteraci\'{o}n sin a\~{n}adir informaci\'{o}n.
-
-\subsection{Implementaci\'{o}n del bucle de control}
-El bucle del script implementa fielmente las ecuaciones~\eqref{eq:f_atr}--\eqref{eq:movimiento}. Las operaciones clave son:
-\begin{itemize}[leftmargin=2em]
-  \item C\'{a}lculo vectorial de las distancias $d_i$ a todos los rayos en una sola operaci\'{o}n.
-  \item Construcci\'{o}n de \texttt{F\_atr} con un \'{u}nico vector unitario.
-  \item Acumulaci\'{o}n de \texttt{F\_rep} mediante un bucle sobre los obst\'{a}culos cercanos.
-  \item Actualizaci\'{o}n de la pose y dibujado incremental con \texttt{plot} y \texttt{drawnow}, lo que permite visualizar la trayectoria en tiempo real.
-\end{itemize}
-
-\subsection{Detecci\'{o}n de m\'{i}nimos locales}
-La detecci\'{o}n se realiza por simple recuento de iteraciones: si el bucle alcanza $1000$ pasos sin satisfacer la condici\'{o}n de llegada se considera que el robot ha quedado bloqueado y se imprime el mensaje correspondiente. No se introducen mecanismos correctores (perturbaci\'{o}n aleatoria, navegaci\'{o}n tangencial, etc.); la mejora de este aspecto se aborda en la pr\'{a}ctica integradora Lab-MR 6.
-
-
-% =====================================================================
-%  4. RESULTADOS EXPERIMENTALES
-% =====================================================================
-\section{Resultados experimentales}
-
-\subsection{Escenario de prueba}
-Las pruebas se han realizado sobre el mapa \texttt{mapa1\_150.png}, un entorno cerrado con varios obst\'{a}culos rectangulares. El usuario selecciona origen y destino con \texttt{ginput}, y la trayectoria recorrida se dibuja en rojo sobre el mapa. La Figura~\ref{fig:trayectoria_p3} ilustra los dos comportamientos t\'{i}picos del m\'{e}todo: un caso en el que el robot alcanza el destino y otro en el que queda atrapado en un m\'{i}nimo local.
+Sobre el mapa \texttt{mapa1\_150.png}, con los par\'{a}metros por defecto de la plantilla ($\alpha = 1$, $\beta = 100$, $D = 1.5$, paso $v = 0.4$), se han realizado experimentos con or\'{i}genes y destinos seleccionados con \texttt{ginput}. La Figura~\ref{fig:trayectoria_p3} muestra los dos comportamientos t\'{i}picos.
 
 \begin{figure}[H]
   \centering
   \begin{subfigure}[t]{0.48\linewidth}
     \centering
-    \pendiente{Captura caso favorable: robot alcanza el destino.}
+    \includegraphics[width=\linewidth]{favorable.jpg}
     \caption{Caso favorable: el robot bordea los obst\'{a}culos y alcanza el destino con una trayectoria suave.}
     \label{fig:trayectoria_p3_ok}
   \end{subfigure}\hfill
   \begin{subfigure}[t]{0.48\linewidth}
     \centering
-    \pendiente{Captura mínimo local: robot atrapado tras 1000 iteraciones.}
+    \includegraphics[width=\linewidth]{minimo_local.jpg}
     \caption{M\'{i}nimo local: atracci\'{o}n y repulsi\'{o}n se cancelan y el robot queda atrapado tras agotar las $1000$ iteraciones.}
     \label{fig:trayectoria_p3_minimo}
   \end{subfigure}
-  \caption{Trayectorias reactivas obtenidas con campos potenciales sobre el mapa \texttt{mapa1\_150.png}. C\'{i}rculo verde: origen. C\'{i}rculo rojo: destino. Traza roja: recorrido del robot.}
+  \caption{Trayectorias reactivas obtenidas con campos potenciales sobre \texttt{mapa1\_150.png}. C\'{i}rculo verde: origen. C\'{i}rculo rojo: destino. Traza roja: recorrido del robot.}
   \label{fig:trayectoria_p3}
 \end{figure}
 
-\subsection{An\'{a}lisis cualitativo}
-Con los par\'{a}metros por defecto ($\alpha=1$, $\beta=100$, $D=1.5$):
-\begin{itemize}[leftmargin=2em]
-  \item En configuraciones \textbf{abiertas}, el robot avanza directamente hacia el destino con una desviaci\'{o}n m\'{i}nima al pasar cerca de paredes.
-  \item En configuraciones \textbf{con obst\'{a}culos intermedios}, el robot bordea el obst\'{a}culo siguiendo una trayectoria suave (Figura~\ref{fig:trayectoria_p3_ok}).
-  \item En configuraciones con \textbf{obst\'{a}culos en forma de \textsf{U}} o cuellos estrechos enfrentados al destino, el robot puede quedar atrapado: la atracci\'{o}n hacia el destino y la repulsi\'{o}n combinada se cancelan, generando un \textbf{m\'{i}nimo local} (Figura~\ref{fig:trayectoria_p3_minimo}).
-\end{itemize}
-
-\subsection{Sensibilidad a los par\'{a}metros}
-La relaci\'{o}n $\beta/\alpha$ controla el equilibrio entre evitaci\'{o}n y avance:
-\begin{itemize}[leftmargin=2em]
-  \item Con $\beta$ demasiado peque\~{n}o, el robot rasca paredes o llega a colisionar.
-  \item Con $\beta$ demasiado grande, la trayectoria se aleja innecesariamente de los obst\'{a}culos y aumentan las oscilaciones.
-  \item El valor $\beta = 100$ ofrece un compromiso adecuado en este mapa con $\alpha = 1$ y $D = 1.5$.
-\end{itemize}
-
-El rango de influencia $D$ act\'{u}a como filtro: incrementarlo hace que el robot empiece a desviarse antes, mientras que reducirlo produce reacciones bruscas en las cercan\'{i}as. El valor $D = 1.5$ corresponde aproximadamente a tres pasos del robot, lo que da margen de reacci\'{o}n sin sobre-anticipaci\'{o}n.
+\subsection{Efecto de los par\'{a}metros}
+Variando $\alpha$ y $\beta$ se observa el equilibrio entre avance y evitaci\'{o}n: con $\beta$ peque\~{n}o el robot se acerca demasiado a las paredes, con $\beta$ grande la trayectoria se aleja innecesariamente y aparecen oscilaciones. Variando $D$ se controla cu\'{a}ndo empieza a desviarse el robot: $D$ peque\~{n}o produce reacciones bruscas en cercan\'{i}as, $D$ grande adelanta la desviaci\'{o}n. Los valores por defecto ofrecen un compromiso adecuado en este mapa.
 
 \subsection{¿Pueden los par\'{a}metros resolver un m\'{i}nimo local?}
-El enunciado plantea expl\'{i}citamente la siguiente pregunta: una vez situado el robot en una configuraci\'{o}n de m\'{i}nimo local, \textbf{¿puede el m\'{e}todo encontrar la soluci\'{o}n s\'{o}lo modificando $\alpha$, $\beta$ o $D$?}
+\textbf{No.} Un m\'{i}nimo local es un punto $q^*$ donde $\mathbf{F}_\text{atr}(q^*) + \mathbf{F}_\text{rep}(q^*) = \mathbf{0}$. Cambiar $\alpha$ y $\beta$ \emph{escala} ambas componentes, pero si las fuerzas se cancelan en $q^*$ con una pareja $(\alpha, \beta)$, tambi\'{e}n se cancelan con cualquier $(\lambda\alpha, \lambda\beta)$. Modificar la relaci\'{o}n $\beta/\alpha$ desplaza el punto de cancelaci\'{o}n a otra ubicaci\'{o}n del entorno pero no elimina el m\'{i}nimo, simplemente lo translada. Variar $D$ tampoco rompe la cancelaci\'{o}n: cambia qu\'{e} obst\'{a}culos contribuyen a la repulsi\'{o}n, pero en cualquier configuraci\'{o}n con simetr\'{i}a (cuello en \textsf{U}, paredes enfrentadas) la cancelaci\'{o}n vectorial sigue siendo posible.
 
-La respuesta es \textbf{no}. Un m\'{i}nimo local del campo potencial es un punto $q^*$ donde $\mathbf{F}_\text{atr}(q^*) + \mathbf{F}_\text{rep}(q^*) = \mathbf{0}$. Modificar $\alpha$ y $\beta$ \textbf{escala} ambas componentes pero \textbf{no cambia la geometr\'{i}a} del campo: si las fuerzas se cancelan en $q^*$ con una pareja $(\alpha, \beta)$, tambi\'{e}n se cancelan con cualquier $(\lambda\alpha, \lambda\beta)$, y reescalar solo una de ellas como $(\alpha', \beta')$ desplaza el punto de cancelaci\'{o}n a otra ubicaci\'{o}n del entorno pero \textbf{no elimina el m\'{i}nimo}, simplemente lo translada. Modificar $D$ tampoco rompe el m\'{i}nimo: cambia qu\'{e} obst\'{a}culos contribuyen a la repulsi\'{o}n, pero la cancelaci\'{o}n vectorial se mantiene posible en cualquier configuraci\'{o}n con simetr\'{i}a (cuello en \textsf{U}, paredes enfrentadas, etc.).
-
-Por tanto, los m\'{i}nimos locales son una limitaci\'{o}n \textbf{estructural} del m\'{e}todo, no un defecto de calibraci\'{o}n. Su mitigaci\'{o}n requiere extender el algoritmo, por ejemplo con perturbaci\'{o}n aleatoria, navegaci\'{o}n tangencial o informaci\'{o}n global. La pr\'{a}ctica integradora Lab-MR 6 aborda esta cuesti\'{o}n a\~{n}adiendo un campo tangencial y una maniobra de escape activada por detecci\'{o}n de estancamiento.
+Los m\'{i}nimos locales son por tanto una limitaci\'{o}n \textbf{estructural} del m\'{e}todo reactivo puro, no un problema de calibraci\'{o}n. Resolverlos requiere extender el algoritmo (perturbaci\'{o}n aleatoria, campo tangencial, informaci\'{o}n global), v\'{i}a que se explora en Lab-MR 6.
 
 
 % =====================================================================
-%  5. DISCUSIÓN
+%  4. COMENTARIOS FINALES
 % =====================================================================
-\section{Discusi\'{o}n}
+\section{Comentarios finales}
 
-\subsection{Problemas encontrados y soluciones}
-
-\paragraph{Problema 1: rayos sin impacto contaminan la repulsi\'{o}n.}
-\texttt{rayIntersection} devuelve \texttt{NaN} cuando no hay intersecci\'{o}n dentro del alcance, lo que invalida cualquier operaci\'{o}n vectorial posterior. \textbf{Soluci\'{o}n}: m\'{a}scara l\'{o}gica que descarta los rayos no v\'{a}lidos antes de calcular distancias y vectores repulsivos.
-
-\paragraph{Problema 2: contribuciones repulsivas despreciables.}
-Aunque la f\'{o}rmula~\eqref{eq:f_rep_i} se anula por construcci\'{o}n en $d_i = D$, evaluarla para todos los rayos del l\'{a}ser es ineficiente. \textbf{Soluci\'{o}n}: filtrar previamente por $d_i < D$ y solo iterar sobre obst\'{a}culos relevantes, con un coste despreciable en el resto.
-
-\paragraph{Problema 3: m\'{i}nimos locales.}
-En zonas donde la atracci\'{o}n y la repulsi\'{o}n se cancelan exactamente, el robot oscila o se detiene. \textbf{Soluci\'{o}n}: en esta pr\'{a}ctica solo se \textbf{detectan} (l\'{i}mite de $1000$ iteraciones); la mitigaci\'{o}n se aborda en Lab-MR 6 mediante un campo tangencial y una maniobra de escape por estancamiento.
-
-\subsection{Limitaciones del m\'{e}todo}
-\begin{itemize}[leftmargin=2em]
-  \item \textbf{Susceptibilidad a m\'{i}nimos locales}: no se puede resolver \'{u}nicamente ajustando $\alpha$ y $\beta$.
-  \item \textbf{Ausencia de memoria global}: el robot no recuerda zonas exploradas, por lo que puede volver a entrar en la misma trampa.
-  \item \textbf{Movimiento de paso fijo}: el avance constante $v$ no se adapta a la cercan\'{i}a de obst\'{a}culos, lo que puede provocar pasos demasiado grandes en zonas estrechas.
-  \item \textbf{Modelo puntual del robot}: no se considera la geometr\'{i}a del veh\'{i}culo; en escenarios reales habr\'{i}a que inflar los obst\'{a}culos.
-  \item \textbf{Sensor frontal limitado a $180^\circ$}: los obst\'{a}culos por detr\'{a}s no se ven, lo que es coherente con el m\'{e}todo reactivo pero no permite reculadas seguras.
-\end{itemize}
-
-
-% =====================================================================
-%  6. CONCLUSIONES
-% =====================================================================
-\section{Conclusiones}
-Se ha implementado un controlador de \textbf{navegaci\'{o}n reactiva por campos potenciales artificiales} que dirige al robot hacia un destino seleccionado evitando los obst\'{a}culos detectados por el l\'{a}ser. El controlador es simple, transparente y eficiente, y reproduce con fidelidad las propiedades te\'{o}ricas del m\'{e}todo: campo atractivo unitario hacia el destino, campo repulsivo que diverge en la frontera del obst\'{a}culo y se anula en la frontera de influencia, y combinaci\'{o}n vectorial directa para definir la direcci\'{o}n de avance.
-
-Las pruebas confirman que el m\'{e}todo es \textbf{eficaz} en escenarios moderadamente complejos pero \textbf{insuficiente} en presencia de configuraciones que generan m\'{i}nimos locales, donde la \'{u}nica salida es disponer de informaci\'{o}n global. Esta limitaci\'{o}n motiva la pr\'{a}ctica Lab-MR 6, en la que la planificaci\'{o}n global (Dijkstra/A*) act\'{u}a como gu\'{i}a y los campos potenciales se reducen a la ejecuci\'{o}n local entre subobjetivos, complementados con un campo tangencial y una maniobra de escape por estancamiento.
+La implementaci\'{o}n cumple lo que pide el enunciado: el robot navega reactivamente, alcanza el destino en configuraciones favorables y queda detectado como atrapado en configuraciones de m\'{i}nimo local. La respuesta a la pregunta del enunciado es negativa: ajustar par\'{a}metros no resuelve los m\'{i}nimos locales, que requieren modificar el algoritmo. Esa extensi\'{o}n se aborda en Lab-MR 6, donde la planificaci\'{o}n global (Dijkstra/A*) act\'{u}a como gu\'{i}a y los campos potenciales se complementan con un campo tangencial y una maniobra de escape por estancamiento.
 
 \end{document}

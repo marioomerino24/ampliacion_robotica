@@ -13,107 +13,45 @@
 \begin{document}
 
 \portada{Lab-MR 5}{Planificaci\'{o}n de caminos II}%
-        {Algoritmo A* con heur\'{i}stica externa y an\'{a}lisis de admisibilidad}
+        {Algoritmo A*}
 
 \tableofcontents
 \clearpage
 
 
 % =====================================================================
-%  1. INTRODUCCIÓN
+%  1. OBJETIVO
 % =====================================================================
-\section{Introducci\'{o}n}
-
-\subsection{Objetivo de la pr\'{a}ctica}
-Implementar el algoritmo \textbf{A*} en \matlab{} como una funci\'{o}n que reciba como par\'{a}metros la matriz de costes $G$, una matriz de heur\'{i}sticas $H$ pasada externamente, un nodo origen y un nodo destino. Adem\'{a}s del algoritmo en s\'{i}, la pr\'{a}ctica plantea ilustrar el papel cr\'{i}tico que juega la \textbf{admisibilidad} de la heur\'{i}stica: cuando $H$ sobreestima el coste real, A* puede devolver rutas \textbf{sub\'{o}ptimas}.
-
-\subsection{Descripci\'{o}n del problema}
-Dado un grafo dirigido $\mathcal{G} = (\mathcal{V}, \mathcal{E})$ con $N$ nodos y matriz de costes $G \in \mathbb{R}^{N\times N}$ ($G(i,j) > 0$ representa el arco $i\to j$ con peso $G(i,j)$), una matriz de heur\'{i}sticas $H \in \mathbb{R}^{N\times N}$ ($H(i,j)$ es la estimaci\'{o}n del coste de $i$ a $j$), y dos nodos $s$ (origen) y $t$ (destino), se desea encontrar:
-\begin{enumerate}[leftmargin=2em]
-  \item el coste de la ruta hallada por A* desde $s$ hasta $t$,
-  \item la secuencia de nodos $\pi = [s, \dots, t]$ que la define.
-\end{enumerate}
-
-La firma exacta de la funci\'{o}n es:
+\section{Objetivo}
+Implementar en \matlab{} una funci\'{o}n con la signatura
 \begin{center}
   \texttt{[coste, ruta] = aestrella(G, H, origen, destino)}
 \end{center}
+que aplique el algoritmo A* sobre un grafo dirigido y ponderado usando una matriz de heur\'{i}sticas $H$ pasada externamente. Validarla con el grafo de $7$ nodos del enunciado, comprobar que la $H$ proporcionada no es admisible para el caso $7\to 4$ (el resultado es sub\'{o}ptimo), y proponer una $H'$ admisible que recupere la ruta \'{o}ptima.
 
 
 % =====================================================================
-%  2. FUNDAMENTOS TEÓRICOS
+%  2. IMPLEMENTACIÓN
 % =====================================================================
-\section{Fundamentos te\'{o}ricos}
+\section{Implementaci\'{o}n}
 
-\subsection{Algoritmo A*}
-A* es un m\'{e}todo de \textbf{b\'{u}squeda informada} en grafos que en cada paso expande el nodo abierto con menor valor de la funci\'{o}n de evaluaci\'{o}n
-\begin{equation}
-  f(n) = g(n) + h(n),
-  \label{eq:f}
-\end{equation}
-donde $g(n)$ es el coste real acumulado desde el origen hasta $n$ y $h(n) = H(n, t)$ es la estimaci\'{o}n heur\'{i}stica del coste restante hasta el destino $t$.
+La funci\'{o}n sigue el esquema cl\'{a}sico de A* (selecci\'{o}n del nodo abierto con menor $f = g + h$, relajaci\'{o}n de aristas), con las mismas decisiones de dise\~{n}o que la implementaci\'{o}n de Dijkstra de Lab-MR 4, por lo que aqu\'{i} solo se comentan las particularidades.
 
-Dijkstra (Lab-MR 4) es el caso particular $h \equiv 0$, en el que A* degenera en b\'{u}squeda desinformada uniforme. Cualquier $h(n) > 0$ que sea \emph{informativo} reduce el n\'{u}mero de nodos explorados respecto a Dijkstra.
+\paragraph{Heur\'{i}stica pasada como matriz externa.} La firma del enunciado entrega $H$ como argumento, no se calcula internamente. La funci\'{o}n toma $h(v) = H(v,\,\text{destino})$ en cada relajaci\'{o}n. Esto permite estudiar el efecto de heur\'{i}sticas no admisibles sin tocar la funci\'{o}n.
 
-\subsection{Admisibilidad de la heur\'{i}stica}
-Sea $h^*(n)$ el coste real m\'{i}nimo desde $n$ hasta el destino. Una heur\'{i}stica $h$ es \textbf{admisible} si
-\begin{equation}
-  h(n) \leq h^*(n) \quad \forall n,
-  \label{eq:admisible}
-\end{equation}
-es decir, \textbf{nunca sobreestima} el coste real. La admisibilidad es condici\'{o}n suficiente para que A* devuelva la ruta \'{o}ptima.
+\paragraph{Selecci\'{o}n del m\'{i}nimo por b\'{u}squeda lineal.} Igual que en Dijkstra, se usa una b\'{u}squeda lineal sobre los nodos abiertos. La complejidad $O(N^2)$ resultante es aceptable para los tama\~{n}os del enunciado.
 
-Cuando $h$ sobreestima en alg\'{u}n nodo, A* puede expandir prematuramente el destino al alcanzarlo por una ruta de mayor coste, descartando rutas \textbf{m\'{a}s baratas pero todav\'{i}a no exploradas} cuyas estimaciones $f$ son artificialmente altas. El resultado es una ruta v\'{a}lida pero \textbf{no \'{o}ptima}.
+\paragraph{Corte temprano.} El bucle se detiene al extraer el destino del conjunto abierto. Bajo heur\'{i}stica admisible esto es seguro; bajo heur\'{i}stica no admisible puede devolver una ruta sub\'{o}ptima --- precisamente lo que se ilustra en el caso $7\to 4$.
 
-\subsection{Reconstrucci\'{o}n de la ruta}
-Como en Dijkstra, se mantiene un vector de predecesores $\pi[v]$ que se actualiza al relajar aristas. Al terminar el bucle, se reconstruye la ruta retrocediendo desde $t$ hasta $s$.
+\paragraph{Validaciones de entrada.} Se comprueba que $G$ y $H$ son cuadradas $N\times N$ del mismo tama\~{n}o, con costes y heur\'{i}sticas finitos y no negativos, y que origen y destino est\'{a}n en rango. El caso \texttt{origen == destino} devuelve \texttt{coste = 0} sin entrar al bucle.
 
 
 % =====================================================================
-%  3. DISEÑO E IMPLEMENTACIÓN
+%  3. PRUEBAS
 % =====================================================================
-\section{Dise\~{n}o e implementaci\'{o}n}
+\section{Pruebas}
 
-\subsection{Interfaz de la funci\'{o}n}
-La funci\'{o}n se ha implementado como \texttt{aestrella.m} con la signatura del enunciado:
-\begin{center}
-  \texttt{[coste, ruta] = aestrella(G, H, origen, destino)}
-\end{center}
-
-\textbf{Importante}: la heur\'{i}stica se pasa \textbf{como matriz $H$ externa}, no se calcula internamente a partir de coordenadas u otros datos geom\'{e}tricos. Esto sigue estrictamente el enunciado y permite estudiar el efecto de heur\'{i}sticas no admisibles sin modificar la funci\'{o}n.
-
-\subsection{Estructuras del algoritmo}
-Se mantienen vectores de tama\~{n}o $N$:
-\begin{itemize}[leftmargin=2em]
-  \item \texttt{g\_score(v)}: mejor coste real conocido de $s$ a $v$. Inicialmente $\infty$, salvo \texttt{g\_score(origen) = 0}.
-  \item \texttt{f\_score(v) = g\_score(v) + H(v, destino)}: criterio de expansi\'{o}n.
-  \item \texttt{prev(v)}: predecesor en la ruta \'{o}ptima parcial.
-  \item \texttt{abierto(v)}, \texttt{cerrado(v)}: m\'{a}scaras booleanas.
-\end{itemize}
-
-\subsection{Bucle principal}
-\begin{enumerate}[leftmargin=2em]
-  \item Selecciona el nodo abierto con menor $f$.
-  \item Si es el destino, corte temprano y reconstrucci\'{o}n.
-  \item En caso contrario, lo cierra y relaja sus aristas salientes:
-  \begin{equation}
-    \text{si } g(u) + G(u,v) < g(v) \implies g(v) \leftarrow g(u) + G(u,v),\; f(v) \leftarrow g(v) + H(v, t),\; \pi(v) \leftarrow u
-    \label{eq:relajacion}
-  \end{equation}
-\end{enumerate}
-
-\subsection{Validaciones de entrada}
-Antes del bucle se comprueban: $G$ y $H$ cuadradas $N\times N$ del mismo tama\~{n}o, costes y heur\'{i}sticas finitos y no negativos, \texttt{origen} y \texttt{destino} en rango, y caso trivial \texttt{origen == destino}.
-
-
-% =====================================================================
-%  4. RESULTADOS EXPERIMENTALES
-% =====================================================================
-\section{Resultados experimentales}
-
-\subsection{Datos del enunciado}
-El enunciado proporciona un grafo $G$ de $7$ nodos junto con una matriz de heur\'{i}sticas $H$:
-
+Sobre el grafo $G$ y la matriz heur\'{i}stica $H$ del enunciado:
 \begin{equation*}
   G = \begin{bmatrix}
     0 & 2 & 0 & 0 & 9 & 0 & 0 \\
@@ -136,91 +74,30 @@ El enunciado proporciona un grafo $G$ de $7$ nodos junto con una matriz de heur\
   \end{bmatrix}
 \end{equation*}
 
-\subsection{Casos de validaci\'{o}n}
-Se han ejecutado los tres casos planteados por el enunciado. Los resultados se resumen en la Tabla~\ref{tab:casos_aestrella} y se ilustran en la Figura~\ref{fig:aestrella_casos}.
+\subsection{Caso $1\to 7$ con $H$ original}
+La llamada \texttt{[coste, ruta] = aestrella(G, H, 1, 7)} devuelve \texttt{coste = 7} y \texttt{ruta = [1 2 4 6 7]}, \'{o}ptimo y coincidente con el resultado de Dijkstra.
 
-\begin{table}[H]
-  \centering
-  \caption{Casos de validaci\'{o}n del algoritmo A* sobre el grafo del enunciado.}
-  \label{tab:casos_aestrella}
-  \begin{tabularx}{0.98\linewidth}{l c c X}
-    \toprule
-    \textbf{Caso} & \textbf{Coste} & \textbf{Ruta} & \textbf{Observaci\'{o}n} \\
-    \midrule
-    \texttt{aestrella(G, H, 1, 7)}      & $7$ & $[1\,2\,4\,6\,7]$ & \'{O}ptimo. La $H$ del enunciado es admisible para los nodos relevantes en este recorrido. \\
-    \addlinespace
-    \texttt{aestrella(G, H, 7, 4)}      & $4$ & $[7\,4]$ & \textbf{Sub\'{o}ptimo} ($h^*(7,4) = 3$ por la ruta $7\to 6\to 4$). $H(7,4) = 6$ sobreestima, A* expande $4$ directamente desde $7$ y termina. \\
-    \addlinespace
-    \texttt{aestrella(G, H', 7, 4)}     & $3$ & $[7\,6\,4]$ & \textbf{\'{O}ptimo}. Con $H'$ admisible (ver \S\ref{sec:hprime}) A* recupera la ruta de menor coste. \\
-    \bottomrule
-  \end{tabularx}
-\end{table}
+\subsection{Caso $7\to 4$ con $H$ original (heur\'{i}stica no admisible)}
+La llamada \texttt{aestrella(G, H, 7, 4)} devuelve \texttt{coste = 4} y \texttt{ruta = [7 4]}, que \textbf{no} es \'{o}ptima: la ruta $[7\,6\,4]$ tiene coste $3$.
 
-\begin{figure}[H]
-  \centering
-  \pendiente{Captura de los tres casos del enunciado ejecutados con A*.}
-  \caption{Tres casos sobre el grafo del enunciado. Verde: origen; magenta: destino; rojo: ruta calculada por A*. (Izquierda) $1\to 7$ con $H$ original — \'{o}ptimo. (Centro) $7\to 4$ con $H$ original — sub\'{o}ptimo por sobreestimaci\'{o}n. (Derecha) $7\to 4$ con $H'$ admisible — A* recupera el \'{o}ptimo.}
-  \label{fig:aestrella_casos}
-\end{figure}
-
-
-% =====================================================================
-%  5. DISCUSIÓN
-% =====================================================================
-\section{Discusi\'{o}n}
-
-\subsection{Por qu\'{e} falla el caso $7 \to 4$}
-\label{sec:porque_falla}
-Trazando el bucle de A* paso a paso con la $H$ original:
-\begin{enumerate}[leftmargin=2em]
-  \item Se inicia en $7$ con $g(7) = 0$, $f(7) = H(7,4) = 6$.
-  \item Se expande $7$. Sus vecinos en $G$ son $4$ (peso $4$) y $6$ (peso $1$):
-  \begin{itemize}
-    \item $4$: $g(4) = 4$, $f(4) = 4 + H(4,4) = 4 + 0 = 4$.
-    \item $6$: $g(6) = 1$, $f(6) = 1 + H(6,4) = 1 + 4 = 5$.
-  \end{itemize}
-  \item El nodo abierto con menor $f$ es $4$ (justo el destino). A* aplica corte temprano: \texttt{coste = 4}, \texttt{ruta = [7,4]}.
-\end{enumerate}
-
-A* nunca llega a explorar $6$, aunque la ruta $7 \to 6 \to 4$ tiene coste real $3$ (menor que $4$). El motivo es que $H(6,4) = 4$ sobreestima el coste real $h^*(6,4) = 2$, lo que infla artificialmente $f(6)$ y empuja a $6$ por debajo de $4$ en la cola de prioridad.
+El motivo es que $H(7,4) = 6$ y $H(6,4) = 4$ sobreestiman los costes reales $h^*(7,4) = 3$ y $h^*(6,4) = 2$. Trazando el bucle: tras expandir el origen $7$, los abiertos son $4$ con $f(4) = 4 + H(4,4) = 4$ y $6$ con $f(6) = 1 + H(6,4) = 5$. A* extrae el de menor $f$ (que es el destino $4$), aplica corte temprano y devuelve $[7,4]$ sin llegar a expandir $6$. La condici\'{o}n $h(n) \leq h^*(n)$ falla, por lo que la garant\'{i}a de optimalidad de A* no aplica.
 
 \subsection{Heur\'{i}stica admisible propuesta}
-\label{sec:hprime}
-Una heur\'{i}stica admisible para el destino $4$ debe satisfacer $H'(i, 4) \leq h^*(i, 4)$ para todo $i$. Calculando $h^*(\cdot, 4)$ con Dijkstra sobre $G$ se obtienen los costes reales m\'{i}nimos a $4$:
+Una heur\'{i}stica admisible para el destino $4$ debe cumplir $H'(i, 4) \leq h^*(i, 4)$ para todo $i$. Los costes reales m\'{i}nimos a $4$ (calculados con Dijkstra sobre $G$) son:
 \begin{equation*}
-  h^*(:, 4) = \begin{bmatrix} 4 & 2 & 3 & 0 & 1 & 2 & 3 \end{bmatrix}^{\!\top}
+  h^*(:,\,4) = \begin{bmatrix} 4 & 2 & 3 & 0 & 1 & 2 & 3 \end{bmatrix}^{\!\top}
 \end{equation*}
 
-Sustituyendo la columna $4$ de $H$ por estos valores se obtiene la matriz $H'$. Esta es la heur\'{i}stica \textbf{perfectamente informada} (igualdad $H' = h^*$), y trivialmente cumple la condici\'{o}n de admisibilidad. Con $H'$, el bucle de A* explora $7 \to 6$ antes que $7 \to 4$ porque ahora $f(6) = 1 + 2 = 3 < f(4) = 4$, y desde $6$ encuentra la ruta \'{o}ptima al destino.
-
-Existen alternativas menos potentes pero igualmente admisibles, por ejemplo:
-\begin{itemize}[leftmargin=2em]
-  \item $H'_{\text{cero}}(i, j) = 0$: trivialmente admisible, pero hace que A* degenere en Dijkstra (sin ganancia computacional).
-  \item $H'_{\text{BFS}}(i, j) = c_{\min} \cdot d_{\text{aristas}}(i, j)$, donde $c_{\min}$ es el coste m\'{i}nimo de cualquier arista del grafo y $d_{\text{aristas}}$ es la distancia en n\'{u}mero de aristas. Es admisible y m\'{a}s informativa que cero.
-\end{itemize}
-
-La elecci\'{o}n entre estas opciones es un compromiso entre coste de c\'{o}mputo de la heur\'{i}stica y calidad de la b\'{u}squeda. Para grafos peque\~{n}os como el del enunciado, $h^*$ exacta calculada con Dijkstra es factible y \'{o}ptima.
-
-\subsection{Limitaciones}
-\begin{itemize}[leftmargin=2em]
-  \item Una heur\'{i}stica admisible garantiza optimalidad pero no necesariamente es \textbf{consistente} (mon\'{o}tona). Para implementaciones m\'{a}s sencillas con b\'{u}squeda en grafos (sin reapertura de nodos cerrados) la consistencia es preferible.
-  \item La b\'{u}squeda lineal del m\'{i}nimo en cada iteraci\'{o}n da complejidad $O(N^2)$. Para grafos grandes ser\'{i}a m\'{a}s eficiente una cola de prioridad.
-  \item La funci\'{o}n no contempla heur\'{i}sticas dependientes del estado m\'{a}s all\'{a} de la matriz $H$ pasada (suficiente para el enunciado).
-\end{itemize}
+Sustituyendo la columna $4$ de $H$ por estos valores se obtiene la matriz $H'$. Con esa heur\'{i}stica, \texttt{aestrella(G, H', 7, 4)} devuelve \texttt{coste = 3} y \texttt{ruta = [7 6 4]}: A* recupera el \'{o}ptimo porque ahora $f(6) = 1 + 2 = 3 < f(4) = 4$, y explora primero $6$.
 
 
 % =====================================================================
-%  6. CONCLUSIONES
+%  4. COMENTARIOS FINALES
 % =====================================================================
-\section{Conclusiones}
-Se ha implementado A* sobre grafos dirigidos con la signatura exacta del enunciado, recibiendo $G$, $H$, origen y destino, y devolviendo coste y ruta. La validaci\'{o}n con los tres casos del enunciado confirma:
+\section{Comentarios finales}
 
-\begin{enumerate}[leftmargin=2em]
-  \item Para $1 \to 7$ con la $H$ original, A* recupera la ruta \'{o}ptima $[1,2,4,6,7]$ con coste $7$.
-  \item Para $7 \to 4$ con la misma $H$, A* devuelve $[7,4]$ con coste $4$, \textbf{peor que el \'{o}ptimo} $[7,6,4]$ de coste $3$. La causa es la sobreestimaci\'{o}n $H(7,4) = 6 > h^*(7,4) = 3$, que hace que $H$ no sea admisible.
-  \item Sustituyendo la columna $4$ de $H$ por los valores reales $h^*(\cdot, 4)$, la heur\'{i}stica resulta admisible y A* recupera la ruta \'{o}ptima $[7,6,4]$.
-\end{enumerate}
+La implementaci\'{o}n cumple lo que pide el enunciado y los tres casos confirman el papel cr\'{i}tico de la admisibilidad: con heur\'{i}stica admisible A* devuelve la ruta \'{o}ptima, y sin admisibilidad puede devolver rutas sub\'{o}ptimas pese a ser un algoritmo informado.
 
-El experimento ilustra de forma concreta la afirmaci\'{o}n te\'{o}rica del enunciado: A* devuelve el camino \'{o}ptimo \emph{si y solo si} la heur\'{i}stica satisface $h(n) \leq h^*(n)$. La pr\'{a}ctica integradora Lab-MR 6 reutiliza A* (con heur\'{i}stica eucl\'{i}dea consistente, garantizada al construir una matriz de costes compatible) como planificador global de la navegaci\'{o}n aut\'{o}noma.
+Esta misma funci\'{o}n se reutiliza en Lab-MR 6 como planificador global, donde se construye una heur\'{i}stica eucl\'{i}dea consistente recalculando una matriz de costes basada tambi\'{e}n en distancias eucl\'{i}deas (necesario para que la heur\'{i}stica sea consistente, no solo admisible).
 
 \end{document}

@@ -75,13 +75,6 @@ Sobre el grafo $G$ de $7$ nodos del enunciado:
 
 \noindent la llamada \texttt{[coste, ruta] = dijkstra(G, 1, 7)} devuelve \texttt{coste = 7} y \texttt{ruta = [1 2 4 6 7]}, que coincide con el resultado esperado del enunciado.
 
-\begin{figure}[H]
-  \centering
-  \pendiente{Captura del grafo de 7 nodos con la ruta óptima 1→7 resaltada.}
-  \caption{Grafo de $7$ nodos con la ruta \'{o}ptima de $1$ a $7$ resaltada en rojo. Coste $7$, ruta $[1\,2\,4\,6\,7]$.}
-  \label{fig:dijkstra_ejemplo7}
-\end{figure}
-
 \subsection{Matriz J de grafos.mat (25 nodos)}
 La matriz \texttt{J} es un grafo dirigido y asim\'{e}trico de $25$ nodos. La asimetr\'{i}a es relevante: por ejemplo $J(1,7) \neq J(7,1)$, lo que hace que las rutas de ida y vuelta entre el mismo par de nodos no sean iguales.
 
