@@ -6,6 +6,9 @@
 \input{\commonpath/commands}
 \graphicspath{{figures/}{\commonpath/img/}}
 
+% Esta práctica se realiza íntegramente en MATLAB (no se usa ROS ni CoppeliaSim).
+\renewcommand{\entorno}{\matlab{}}
+
 % ===== Documento =====
 \begin{document}
 
@@ -17,100 +20,47 @@
 
 
 % =====================================================================
-%  1. INTRODUCCIÓN
+%  1. OBJETIVO
 % =====================================================================
-\section{Introducci\'{o}n}
-
-\subsection{Objetivo de la pr\'{a}ctica}
-El objetivo es implementar el \textbf{algoritmo de Dijkstra} para calcular la ruta de coste m\'{i}nimo entre dos nodos de un grafo topol\'{o}gico ponderado, partiendo de las matrices de adyacencia proporcionadas en el fichero \texttt{grafos.mat}. El resultado proporciona, para una pareja origen--destino, el coste total acumulado y la secuencia de nodos del camino \'{o}ptimo.
-
-\subsection{Descripci\'{o}n del problema}
-Dado un grafo dirigido $\mathcal{G} = (\mathcal{V}, \mathcal{E})$ con $N$ v\'{e}rtices y una matriz de costes $G \in \mathbb{R}^{N\times N}$ tal que $G(i,j) > 0$ representa la existencia de un arco $i\to j$ con peso $G(i,j)$, y dos nodos $s$ (origen) y $t$ (destino), se desea encontrar:
-\begin{enumerate}[leftmargin=2em]
-  \item el coste m\'{i}nimo $d^*(s,t) = \sum_{(u,v)\in\pi^*} G(u,v)$,
-  \item la secuencia de nodos $\pi^* = [s, \dots, t]$ que lo realiza.
-\end{enumerate}
-
-El convenio del enunciado es importante: los pares $(i,j)$ con $G(i,j) = 0$ representan ausencia de arco (no autolazos de coste cero), y todos los pesos son no negativos, condici\'{o}n necesaria para la correcci\'{o}n del algoritmo.
-
-
-% =====================================================================
-%  2. FUNDAMENTOS TEÓRICOS
-% =====================================================================
-\section{Fundamentos te\'{o}ricos}
-
-\subsection{Algoritmo de Dijkstra}
-Dijkstra resuelve el problema del camino m\'{a}s corto desde un origen \'{u}nico en grafos con pesos no negativos. Mantiene tres estructuras:
-\begin{itemize}[leftmargin=2em]
-  \item un vector de \textbf{distancias} $d[v]$ con la mejor estimaci\'{o}n actual desde $s$ hasta $v$,
-  \item un vector de \textbf{predecesores} $\pi[v]$ que permite reconstruir la ruta,
-  \item un conjunto de nodos \textbf{visitados} (cerrados).
-\end{itemize}
-
-Inicialmente $d[s] = 0$, $d[v] = \infty$ para $v \neq s$, y todos los nodos est\'{a}n abiertos. El bucle principal selecciona en cada paso el nodo abierto $u$ con menor $d[u]$, lo marca como visitado y \textbf{relaja} sus aristas salientes:
-\begin{equation}
-  \text{si } d[u] + G(u,v) < d[v] \;\Longrightarrow\; d[v] \leftarrow d[u] + G(u,v),\; \pi[v] \leftarrow u
-  \label{eq:relajacion}
-\end{equation}
-
-El algoritmo termina cuando se extrae el nodo destino o cuando el menor $d$ entre los abiertos es infinito (resto inalcanzable).
-
-\subsection{Propiedades}
-\begin{itemize}[leftmargin=2em]
-  \item \textbf{Optimalidad}: con pesos no negativos, una vez se extrae un nodo $u$ del conjunto abierto, $d[u]$ es definitivo.
-  \item \textbf{Complejidad}: $O(N^2)$ con la implementaci\'{o}n por arrays empleada (selecci\'{o}n lineal del m\'{i}nimo). Una cola de prioridad reducir\'{i}a a $O((N+E)\log N)$, pero para los tama\~{n}os de \texttt{grafos.mat} no es necesario.
-  \item \textbf{Reconstrucci\'{o}n del camino}: a partir de $\pi$, retrocediendo desde $t$ hasta $s$.
-\end{itemize}
-
-\subsection{Corte temprano}
-Cuando solo interesa el camino a un destino concreto, se puede detener el bucle al extraer $u = t$. Esta optimizaci\'{o}n no cambia la complejidad asint\'{o}tica pero reduce el trabajo medio.
-
-
-% =====================================================================
-%  3. DISEÑO E IMPLEMENTACIÓN
-% =====================================================================
-\section{Dise\~{n}o e implementaci\'{o}n}
-
-\subsection{Interfaz de la funci\'{o}n}
-La funci\'{o}n se ha implementado en \matlab{} con la signatura siguiente:
+\section{Objetivo}
+Implementar en \matlab{} una funci\'{o}n con la signatura
 \begin{center}
   \texttt{[coste, ruta] = dijkstra(G, origen, destino)}
 \end{center}
+que devuelva el coste y la secuencia de nodos del camino \'{o}ptimo entre dos nodos de un grafo dirigido y ponderado, y validarla sobre los dos grafos del enunciado: el grafo de ejemplo de $7$ nodos y la matriz \texttt{J} de \texttt{grafos.mat} ($25$ nodos, dirigida y asim\'{e}trica).
 
-\texttt{G} puede pasarse como matriz $N\times N$ o como el \texttt{struct} devuelto por \texttt{load('grafos.mat')}. En este \'{u}ltimo caso, se extrae autom\'{a}ticamente el campo \texttt{J} del struct (matriz de adyacencia ponderada del enunciado) o, si no existe, la primera matriz cuadrada num\'{e}rica que se localice. Esto permite invocar la funci\'{o}n con \texttt{dijkstra(load('grafos.mat'), 1, 7)} sin pasos intermedios.
-
-\subsection{Validaciones de entrada}
-Antes del bucle principal se realizan las siguientes comprobaciones:
-\begin{enumerate}[leftmargin=2em]
-  \item \texttt{G} cuadrada $N\times N$.
-  \item Costes finitos y no negativos (Dijkstra no soporta pesos negativos).
-  \item \'{I}ndices \texttt{origen} y \texttt{destino} dentro de rango.
-  \item Si \texttt{origen == destino}, se devuelve \texttt{coste = 0} y \texttt{ruta = origen} sin entrar al bucle.
-  \item Aviso si la diagonal contiene autolazos no nulos (se ignoran al recorrer vecinos por el filtro $G(u,v) > 0$).
-\end{enumerate}
-
-\subsection{Bucle principal}
-El bucle implementa fielmente el esquema cl\'{a}sico:
-\begin{enumerate}[leftmargin=2em]
-  \item Selecciona el nodo $u$ no visitado con menor $d[u]$.
-  \item Si $d[u] = \infty$, los nodos restantes son inalcanzables: termina.
-  \item Marca $u$ como visitado.
-  \item Si $u = t$, aplica corte temprano y termina.
-  \item Recorre los vecinos $v$ con $G(u,v) > 0$ y aplica la relajaci\'{o}n~\eqref{eq:relajacion}.
-\end{enumerate}
-
-\subsection{Reconstrucci\'{o}n de la ruta}
-Al finalizar, si $d[t] = \infty$ se devuelve \texttt{coste = Inf} y \texttt{ruta = []}. En caso contrario se reconstruye \texttt{ruta} retrocediendo por el vector de predecesores hasta el origen. Como salvaguarda, si en alg\'{u}n paso de la reconstrucci\'{o}n el predecesor es $0$ (situaci\'{o}n te\'{o}ricamente imposible al haber llegado al destino con coste finito) se devuelve \texttt{coste = Inf} y \texttt{ruta = []}.
+El convenio del enunciado es que $G(i,j) = 0$ representa ausencia de arco $i\to j$ y los pesos son no negativos, condici\'{o}n necesaria para que Dijkstra sea correcto.
 
 
 % =====================================================================
-%  4. RESULTADOS EXPERIMENTALES
+%  2. IMPLEMENTACIÓN
 % =====================================================================
-\section{Resultados experimentales}
+\section{Implementaci\'{o}n}
 
-\subsection{Bloque A: grafo de ejemplo del enunciado (7 nodos)}
-El enunciado plantea como primer caso de validaci\'{o}n el siguiente grafo de $7$ nodos:
+La funci\'{o}n sigue el esquema cl\'{a}sico de Dijkstra (selecci\'{o}n del nodo abierto con menor distancia, relajaci\'{o}n de aristas, marcado como cerrado), por lo que aqu\'{i} solo comentamos las decisiones que no son evidentes del enunciado.
 
+\paragraph{Selecci\'{o}n del m\'{i}nimo por b\'{u}squeda lineal.} Para los tama\~{n}os con los que se trabaja ($N \leq 25$), una b\'{u}squeda lineal sobre los nodos abiertos en cada iteraci\'{o}n es m\'{a}s clara y r\'{a}pida que mantener una cola de prioridad. La complejidad $O(N^2)$ resultante es perfectamente aceptable para este problema; con grafos mucho m\'{a}s grandes habr\'{i}a que reconsiderarlo.
+
+\paragraph{Aceptar el \texttt{struct} de \texttt{load} directamente.} El enunciado entrega los grafos dentro de \texttt{grafos.mat}. Para evitar el paso intermedio de extraer la matriz a mano, la funci\'{o}n acepta tanto una matriz como el \texttt{struct} devuelto por \texttt{load}: si recibe el \texttt{struct}, busca el campo \texttt{J} (la matriz del enunciado) y, en su defecto, la primera matriz cuadrada num\'{e}rica que encuentre. As\'{i} se puede invocar como:
+\begin{center}
+  \texttt{[coste, ruta] = dijkstra(load('grafos.mat'), 1, 7)}
+\end{center}
+sin pasos intermedios.
+
+\paragraph{Corte temprano.} Como interesa el camino a un destino concreto, el bucle se detiene en cuanto se extrae $u = t$ del conjunto abierto. No cambia la complejidad asint\'{o}tica, pero reduce el trabajo medio.
+
+\paragraph{Validaciones de entrada.} Antes del bucle se comprueba que \texttt{G} es cuadrada, que los costes son finitos y no negativos (Dijkstra no soporta pesos negativos), y que los \'{i}ndices de origen y destino est\'{a}n dentro del rango. Si \texttt{origen == destino} se devuelve \texttt{coste = 0} sin entrar al bucle. Si la diagonal contiene autolazos, se avisa pero no se aborta: el filtro $G(u,v) > 0$ al recorrer vecinos hace que se ignoren autom\'{a}ticamente.
+
+\paragraph{Reconstrucci\'{o}n de la ruta.} Si $d[t] = \infty$ al terminar, se devuelve \texttt{coste = Inf} y \texttt{ruta = []} (destino inalcanzable). En caso contrario se reconstruye la ruta retrocediendo por el vector de predecesores hasta el origen.
+
+
+% =====================================================================
+%  3. PRUEBAS
+% =====================================================================
+\section{Pruebas}
+
+\subsection{Grafo de ejemplo (7 nodos)}
+Sobre el grafo $G$ de $7$ nodos del enunciado:
 \begin{equation*}
   G = \begin{bmatrix}
     0 & 2 & 0 & 0 & 9 & 0 & 0 \\
@@ -123,76 +73,50 @@ El enunciado plantea como primer caso de validaci\'{o}n el siguiente grafo de $7
   \end{bmatrix}
 \end{equation*}
 
-La ejecuci\'{o}n \texttt{[coste, ruta] = dijkstra(G, 1, 7)} devuelve el resultado esperado: \texttt{coste = 7}, \texttt{ruta = [1 2 4 6 7]} (Figura~\ref{fig:dijkstra_ejemplo7}).
+\noindent la llamada \texttt{[coste, ruta] = dijkstra(G, 1, 7)} devuelve \texttt{coste = 7} y \texttt{ruta = [1 2 4 6 7]}, que coincide con el resultado esperado del enunciado.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.7\linewidth]{dijkstra_ejemplo7}
-  \caption{Grafo de $7$ nodos del enunciado con la ruta \'{o}ptima del nodo $1$ al nodo $7$ resaltada en rojo. Coste total $7$, ruta $[1\,2\,4\,6\,7]$.}
+  \pendiente{Captura del grafo de 7 nodos con la ruta óptima 1→7 resaltada.}
+  \caption{Grafo de $7$ nodos con la ruta \'{o}ptima de $1$ a $7$ resaltada en rojo. Coste $7$, ruta $[1\,2\,4\,6\,7]$.}
   \label{fig:dijkstra_ejemplo7}
 \end{figure}
 
-\subsection{Bloque B: grafos.mat (matriz J, 25 nodos, dirigida y asim\'{e}trica)}
-El segundo bloque de validaci\'{o}n usa la matriz \texttt{J} contenida en \texttt{grafos.mat}, un grafo \textbf{dirigido y asim\'{e}trico} de $25$ nodos. La asimetr\'{i}a es importante: por ejemplo el coste $1 \to 19$ ($16$) no coincide con $19 \to 1$ ($19$) precisamente porque $J(i,j) \neq J(j,i)$ en algunos arcos.
-
-La Tabla~\ref{tab:dijkstra_validacion} resume los $8$ casos del enunciado y compara los resultados obtenidos por la implementaci\'{o}n con los esperados. Todos coinciden.
+\subsection{Matriz J de grafos.mat (25 nodos)}
+La matriz \texttt{J} es un grafo dirigido y asim\'{e}trico de $25$ nodos. La asimetr\'{i}a es relevante: por ejemplo $J(1,7) \neq J(7,1)$, lo que hace que las rutas de ida y vuelta entre el mismo par de nodos no sean iguales.
 
 \begin{table}[H]
   \centering
-  \caption{Validaci\'{o}n de \texttt{dijkstra} sobre la matriz \texttt{J} de \texttt{grafos.mat} ($25$ nodos, dirigida).}
+  \caption{Resultados de \texttt{dijkstra} sobre la matriz \texttt{J} ($25$ nodos, dirigida).}
   \label{tab:dijkstra_validacion}
-  \begin{tabularx}{0.98\linewidth}{c c c X c}
+  \begin{tabularx}{0.98\linewidth}{c c c X}
     \toprule
-    \textbf{Origen} & \textbf{Destino} & \textbf{Coste} & \textbf{Ruta} & \textbf{Estado} \\
+    \textbf{Origen} & \textbf{Destino} & \textbf{Coste} & \textbf{Ruta} \\
     \midrule
-    1  & 19 & $16$  & $[1\,7\,13\,17\,23\,18\,19]$                    & $\checkmark$ \\
-    19 & 1  & $19$  & $[19\,20\,15\,10\,5\,9\,8\,3\,2\,1]$            & $\checkmark$ \\
-    25 & 19 & $11$  & $[25\,20\,15\,14\,18\,19]$                       & $\checkmark$ \\
-    19 & 25 & $4$   & $[19\,20\,25]$                                    & $\checkmark$ \\
-    1  & 23 & $12$  & $[1\,7\,13\,17\,23]$                              & $\checkmark$ \\
-    23 & 1  & $22$  & $[23\,18\,14\,15\,10\,5\,9\,8\,3\,2\,1]$         & $\checkmark$ \\
-    1  & 24 & $\infty$ & $[\,]$ (no alcanzable)                         & $\checkmark$ \\
-    23 & 22 & $40$  & $[23\,18\,14\,15\,10\,5\,9\,8\,3\,2\,1\,7\,13\,17\,12\,11\,16\,22]$ & $\checkmark$ \\
+    1  & 19 & $16$  & $[1\,7\,13\,17\,23\,18\,19]$ \\
+    19 & 1  & $19$  & $[19\,20\,15\,10\,5\,9\,8\,3\,2\,1]$ \\
+    25 & 19 & $11$  & $[25\,20\,15\,14\,18\,19]$ \\
+    19 & 25 & $4$   & $[19\,20\,25]$ \\
+    1  & 23 & $12$  & $[1\,7\,13\,17\,23]$ \\
+    23 & 1  & $22$  & $[23\,18\,14\,15\,10\,5\,9\,8\,3\,2\,1]$ \\
+    1  & 24 & $\infty$ & no alcanzable \\
+    23 & 22 & $40$  & $[23\,18\,14\,15\,10\,5\,9\,8\,3\,2\,1\,7\,13\,17\,12\,11\,16\,22]$ \\
     \bottomrule
   \end{tabularx}
 \end{table}
 
-Obs\'{e}rvese que las rutas de ida y vuelta entre el mismo par de nodos suelen \textbf{no ser sim\'{e}tricas}: por ejemplo $1 \to 23$ pasa por $[1, 7, 13, 17, 23]$ con coste $12$, mientras que $23 \to 1$ recorre $[23, 18, 14, 15, 10, 5, 9, 8, 3, 2, 1]$ con coste $22$. El caso $23 \to 22$ es paradigm\'{a}tico: aunque $22$ y $23$ son nodos pr\'{o}ximos en el mapa, la \'{u}nica forma de alcanzar $22$ desde $23$ pasa por casi todo el grafo (coste $40$, $18$ nodos), porque los arcos disponibles no permiten un atajo directo.
+Conviene fijarse en dos casos. Para $1 \to 23$ el coste es $12$ y la ruta usa $5$ nodos; para $23 \to 1$ el coste sube a $22$ y la ruta a $10$ nodos. M\'{a}s extremo es $23 \to 22$: aunque $22$ y $23$ son nodos pr\'{o}ximos en el mapa, los arcos disponibles obligan a recorrer casi todo el grafo (coste $40$, $18$ nodos). El caso $1 \to 24$ confirma que la funci\'{o}n maneja correctamente la inalcanzabilidad: devuelve \texttt{Inf} y vector vac\'{i}o sin lanzar error.
 
-\subsection{Casos l\'{i}mite verificados}
-\begin{itemize}[leftmargin=2em]
-  \item \texttt{origen == destino}: devuelve coste $0$ y ruta de un solo nodo.
-  \item Nodos sin camino (caso $1\to 24$): devuelve \texttt{coste = Inf}, \texttt{ruta = []}.
-  \item Pesos negativos: rechazados por las validaciones de entrada con error expl\'{i}cito.
-\end{itemize}
+Tambi\'{e}n se han probado los casos l\'{i}mite \texttt{origen == destino} (devuelve coste $0$ y ruta de un solo nodo) y entrada con pesos negativos (rechazada con error en la validaci\'{o}n).
 
 
 % =====================================================================
-%  5. DISCUSIÓN
+%  4. COMENTARIOS FINALES
 % =====================================================================
-\section{Discusi\'{o}n}
+\section{Comentarios finales}
 
-\subsection{Decisiones de implementaci\'{o}n}
-\paragraph{Selecci\'{o}n del m\'{i}nimo por b\'{u}squeda lineal.} Para los tama\~{n}os de los grafos del enunciado, una b\'{u}squeda lineal sobre los nodos abiertos es m\'{a}s simple y r\'{a}pida en la pr\'{a}ctica que mantener una cola de prioridad. La complejidad $O(N^2)$ es perfectamente aceptable.
+La implementaci\'{o}n cumple lo que pide el enunciado y se ha validado contra todos los casos propuestos. La b\'{u}squeda lineal del m\'{i}nimo no es la opci\'{o}n m\'{a}s eficiente posible, pero para los tama\~{n}os de \texttt{grafos.mat} no merece la pena complicarla con una cola de prioridad; en grafos mucho m\'{a}s dispersos y grandes ser\'{i}a el siguiente paso a mirar.
 
-\paragraph{Uso de \texttt{struct} de \texttt{load}.} Aceptar directamente la salida de \texttt{load('grafos.mat')} reduce los pasos del usuario y evita errores al confundir cu\'{a}l de las matrices del fichero corresponde al grafo activo (se establece \texttt{J} como campo por defecto).
-
-\paragraph{Convenio $G(i,j)=0$ como ausencia de arco.} Es el convenio del enunciado y se respeta al recorrer vecinos con \texttt{find(G(u,:) > 0)}. La advertencia de diagonal no nula previene errores al usar matrices preparadas para otros algoritmos.
-
-\subsection{Limitaciones}
-\begin{itemize}[leftmargin=2em]
-  \item No se soportan pesos negativos. Para esos casos habr\'{i}a que usar Bellman-Ford.
-  \item No se devuelve la tabla completa de distancias a todos los nodos, solo al destino. Si fuera necesario para depurar, basta con eliminar el corte temprano y devolver \texttt{dist} y \texttt{prev}.
-  \item La implementaci\'{o}n no es \'{o}ptima para grafos muy dispersos de gran tama\~{n}o; en ese caso, una cola de prioridad ser\'{i}a preferible.
-\end{itemize}
-
-
-% =====================================================================
-%  6. CONCLUSIONES
-% =====================================================================
-\section{Conclusiones}
-Se ha implementado una versi\'{o}n robusta y autocontenida del algoritmo de Dijkstra adaptada al formato de datos del enunciado. La interfaz acepta tanto matrices como el \texttt{struct} de \texttt{load}, lo que simplifica su uso interactivo en \matlab{}. La funci\'{o}n incorpora las salvaguardas habituales (validaci\'{o}n de pesos, casos l\'{i}mite, corte temprano y manejo de inalcanzabilidad) y proporciona los dos elementos esperados: coste m\'{i}nimo y secuencia de nodos del camino \'{o}ptimo.
-
-Esta funci\'{o}n constituye la base de la planificaci\'{o}n global utilizada despu\'{e}s en Lab-MR 5 (variante A* con heur\'{i}stica consistente) y en Lab-MR 6 (navegaci\'{o}n aut\'{o}noma completa, donde la ruta de Dijkstra act\'{u}a como secuencia de subobjetivos para la navegaci\'{o}n local reactiva).
+Esta misma funci\'{o}n se reutiliza en Lab-MR 5 como referencia para comparar contra A*, y en Lab-MR 6 como planificador global cuya ruta se entrega luego a la navegaci\'{o}n local reactiva.
 
 \end{document}

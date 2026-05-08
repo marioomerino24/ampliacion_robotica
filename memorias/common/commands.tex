@@ -7,6 +7,9 @@
 \newcommand{\pioneer}{Pioneer P3DX}
 \newcommand{\matlab}{MATLAB}
 
+% --- Entorno mostrado en la portada (sobrescribir con \renewcommand en memorias MATLAB-only) ---
+\newcommand{\entorno}{\roshumble{} · \coppelia{} · \pioneer{}}
+
 % --- Unidades ---
 \newcommand{\ms}{\si{\meter\per\second}}
 \newcommand{\hz}[1]{\SI{#1}{\hertz}}
@@ -40,7 +43,7 @@
       \rule{0.55\textwidth}{0.4pt}\\[0.3cm]
       {\small
         Repositorio: \texttt{github.com/marioomerino24/ampliacion\_robotica}\\[0.1cm]
-        Entorno: \roshumble{} · \coppelia{} · \pioneer{}
+        Entorno: \entorno
       }
     \end{center}
     \clearpage

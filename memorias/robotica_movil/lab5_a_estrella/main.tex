@@ -6,6 +6,9 @@
 \input{\commonpath/commands}
 \graphicspath{{figures/}{\commonpath/img/}}
 
+% Esta práctica se realiza íntegramente en MATLAB (no se usa ROS ni CoppeliaSim).
+\renewcommand{\entorno}{\matlab{}}
+
 % ===== Documento =====
 \begin{document}
 
@@ -155,8 +158,8 @@ Se han ejecutado los tres casos planteados por el enunciado. Los resultados se r
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\linewidth]{aestrella_casos}
-  \caption{Tres casos de validaci\'{o}n sobre el grafo del enunciado. Verde: origen; magenta: destino; rojo: ruta calculada por A*. (Izquierda) $1\to 7$ con $H$ original — \'{o}ptimo. (Centro) $7\to 4$ con $H$ original — la ruta $[7,4]$ tiene coste $4$ pero la \'{o}ptima es $[7,6,4]$ con coste $3$; A* falla por sobreestimaci\'{o}n. (Derecha) $7\to 4$ con $H'$ admisible — A* recupera el \'{o}ptimo.}
+  \pendiente{Captura de los tres casos del enunciado ejecutados con A*.}
+  \caption{Tres casos sobre el grafo del enunciado. Verde: origen; magenta: destino; rojo: ruta calculada por A*. (Izquierda) $1\to 7$ con $H$ original — \'{o}ptimo. (Centro) $7\to 4$ con $H$ original — sub\'{o}ptimo por sobreestimaci\'{o}n. (Derecha) $7\to 4$ con $H'$ admisible — A* recupera el \'{o}ptimo.}
   \label{fig:aestrella_casos}
 \end{figure}
 

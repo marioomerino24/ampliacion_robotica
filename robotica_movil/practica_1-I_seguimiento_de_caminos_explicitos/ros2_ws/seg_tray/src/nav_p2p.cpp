@@ -145,8 +145,7 @@ private:
         while (delta_theta < -M_PI) delta_theta += 2*M_PI;
 
         // Velocidad lineal deseada (fija a 1.2 m/s según el PDF)
-        double v = 1.2;
-        control_gain_ = 4.0;
+        double v = max_linear_speed_;
 
         // Curvatura (control proporcional)
         double gamma = control_gain_ * delta_theta;
@@ -162,7 +161,7 @@ private:
         
         // Convertir a velocidades lineales y angulares (cinemática inversa)
         double linear_velocity = (omega_i + omega_d) * wheel_radius_ / 2.0;
-        double angular_velocity = (omega_d - omega_i) * wheel_radius_ / (2.0 * wheel_base_);
+        double angular_velocity = (omega_d - omega_i) * wheel_radius_ / wheel_base_;
 
 
 

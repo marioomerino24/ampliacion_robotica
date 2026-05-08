@@ -6,6 +6,9 @@
 \input{\commonpath/commands}
 \graphicspath{{figures/}{\commonpath/img/}}
 
+% Esta práctica se realiza íntegramente en MATLAB (no se usa ROS ni CoppeliaSim).
+\renewcommand{\entorno}{\matlab{}}
+
 % ===== Documento =====
 \begin{document}
 
@@ -159,13 +162,13 @@ Las pruebas se han realizado sobre el mapa \texttt{mapa1\_150.png}, un entorno c
   \centering
   \begin{subfigure}[t]{0.48\linewidth}
     \centering
-    \includegraphics[width=\linewidth]{ideal}
+    \pendiente{Captura caso favorable: robot alcanza el destino.}
     \caption{Caso favorable: el robot bordea los obst\'{a}culos y alcanza el destino con una trayectoria suave.}
     \label{fig:trayectoria_p3_ok}
   \end{subfigure}\hfill
   \begin{subfigure}[t]{0.48\linewidth}
     \centering
-    \includegraphics[width=\linewidth]{minimo}
+    \pendiente{Captura mínimo local: robot atrapado tras 1000 iteraciones.}
     \caption{M\'{i}nimo local: atracci\'{o}n y repulsi\'{o}n se cancelan y el robot queda atrapado tras agotar las $1000$ iteraciones.}
     \label{fig:trayectoria_p3_minimo}
   \end{subfigure}
