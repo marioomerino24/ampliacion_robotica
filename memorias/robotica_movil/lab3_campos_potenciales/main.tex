@@ -9,7 +9,7 @@
 % ===== Documento =====
 \begin{document}
 
-\portada{Lab-MR3}{Navegaci\'{o}n reactiva con campos potenciales}%
+\portada{Lab-MR 3}{Navegaci\'{o}n reactiva con campos potenciales}%
         {Navegaci\'{o}n mediante campos potenciales artificiales}
 
 % =====================================================================
@@ -103,7 +103,7 @@ La soluci\'{o}n es un \'{u}nico script de \matlab{} (\texttt{plantilla\_campos\_
 \end{enumerate}
 
 \subsection{Par\'{a}metros utilizados}
-El Cuadro~\ref{tab:parametros_p3} resume los valores empleados, todos ellos constantes durante la ejecuci\'{o}n.
+La Tabla~\ref{tab:parametros_p3} resume los valores empleados, todos ellos constantes durante la ejecuci\'{o}n.
 
 \begin{table}[H]
   \centering
@@ -144,7 +144,7 @@ El bucle del script implementa fielmente las ecuaciones~\eqref{eq:f_atr}--\eqref
 \end{itemize}
 
 \subsection{Detecci\'{o}n de m\'{i}nimos locales}
-La detecci\'{o}n se realiza por simple recuento de iteraciones: si el bucle alcanza $1000$ pasos sin satisfacer la condici\'{o}n de llegada se considera que el robot ha quedado bloqueado y se imprime el mensaje correspondiente. No se introducen mecanismos correctores (perturbaci\'{o}n aleatoria, navegaci\'{o}n tangencial, etc.); la mejora de este aspecto se aborda en la pr\'{a}ctica integradora Lab-MR6.
+La detecci\'{o}n se realiza por simple recuento de iteraciones: si el bucle alcanza $1000$ pasos sin satisfacer la condici\'{o}n de llegada se considera que el robot ha quedado bloqueado y se imprime el mensaje correspondiente. No se introducen mecanismos correctores (perturbaci\'{o}n aleatoria, navegaci\'{o}n tangencial, etc.); la mejora de este aspecto se aborda en la pr\'{a}ctica integradora Lab-MR 6.
 
 
 % =====================================================================
@@ -153,12 +153,23 @@ La detecci\'{o}n se realiza por simple recuento de iteraciones: si el bucle alca
 \section{Resultados experimentales}
 
 \subsection{Escenario de prueba}
-Las pruebas se han realizado sobre el mapa \texttt{mapa1\_150.png}, un entorno cerrado con varios obst\'{a}culos rectangulares. El usuario selecciona origen y destino con \texttt{ginput}, y la trayectoria recorrida se dibuja en rojo sobre el mapa.
+Las pruebas se han realizado sobre el mapa \texttt{mapa1\_150.png}, un entorno cerrado con varios obst\'{a}culos rectangulares. El usuario selecciona origen y destino con \texttt{ginput}, y la trayectoria recorrida se dibuja en rojo sobre el mapa. La Figura~\ref{fig:trayectoria_p3} ilustra los dos comportamientos t\'{i}picos del m\'{e}todo: un caso en el que el robot alcanza el destino y otro en el que queda atrapado en un m\'{i}nimo local.
 
 \begin{figure}[H]
   \centering
-  \pendiente{Captura de la trayectoria sobre \texttt{mapa1\_150.png}: marcadores verde (origen) y rojo (destino) con la traza roja del recorrido.}
-  \caption{Trayectoria reactiva obtenida con campos potenciales sobre el mapa de ocupaci\'{o}n.}
+  \begin{subfigure}[t]{0.48\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{ideal}
+    \caption{Caso favorable: el robot bordea los obst\'{a}culos y alcanza el destino con una trayectoria suave.}
+    \label{fig:trayectoria_p3_ok}
+  \end{subfigure}\hfill
+  \begin{subfigure}[t]{0.48\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{minimo}
+    \caption{M\'{i}nimo local: atracci\'{o}n y repulsi\'{o}n se cancelan y el robot queda atrapado tras agotar las $1000$ iteraciones.}
+    \label{fig:trayectoria_p3_minimo}
+  \end{subfigure}
+  \caption{Trayectorias reactivas obtenidas con campos potenciales sobre el mapa \texttt{mapa1\_150.png}. C\'{i}rculo verde: origen. C\'{i}rculo rojo: destino. Traza roja: recorrido del robot.}
   \label{fig:trayectoria_p3}
 \end{figure}
 
@@ -166,8 +177,8 @@ Las pruebas se han realizado sobre el mapa \texttt{mapa1\_150.png}, un entorno c
 Con los par\'{a}metros por defecto ($\alpha=1$, $\beta=100$, $D=1.5$):
 \begin{itemize}[leftmargin=2em]
   \item En configuraciones \textbf{abiertas}, el robot avanza directamente hacia el destino con una desviaci\'{o}n m\'{i}nima al pasar cerca de paredes.
-  \item En configuraciones \textbf{con obst\'{a}culos intermedios}, el robot bordea el obst\'{a}culo siguiendo una trayectoria suave.
-  \item En configuraciones con \textbf{obst\'{a}culos en forma de \textsf{U}} o cuellos estrechos enfrentados al destino, el robot puede quedar atrapado: la atracci\'{o}n hacia el destino y la repulsi\'{o}n combinada se cancelan, generando un \textbf{m\'{i}nimo local}.
+  \item En configuraciones \textbf{con obst\'{a}culos intermedios}, el robot bordea el obst\'{a}culo siguiendo una trayectoria suave (Figura~\ref{fig:trayectoria_p3_ok}).
+  \item En configuraciones con \textbf{obst\'{a}culos en forma de \textsf{U}} o cuellos estrechos enfrentados al destino, el robot puede quedar atrapado: la atracci\'{o}n hacia el destino y la repulsi\'{o}n combinada se cancelan, generando un \textbf{m\'{i}nimo local} (Figura~\ref{fig:trayectoria_p3_minimo}).
 \end{itemize}
 
 \subsection{Sensibilidad a los par\'{a}metros}
@@ -179,6 +190,13 @@ La relaci\'{o}n $\beta/\alpha$ controla el equilibrio entre evitaci\'{o}n y avan
 \end{itemize}
 
 El rango de influencia $D$ act\'{u}a como filtro: incrementarlo hace que el robot empiece a desviarse antes, mientras que reducirlo produce reacciones bruscas en las cercan\'{i}as. El valor $D = 1.5$ corresponde aproximadamente a tres pasos del robot, lo que da margen de reacci\'{o}n sin sobre-anticipaci\'{o}n.
+
+\subsection{¿Pueden los par\'{a}metros resolver un m\'{i}nimo local?}
+El enunciado plantea expl\'{i}citamente la siguiente pregunta: una vez situado el robot en una configuraci\'{o}n de m\'{i}nimo local, \textbf{¿puede el m\'{e}todo encontrar la soluci\'{o}n s\'{o}lo modificando $\alpha$, $\beta$ o $D$?}
+
+La respuesta es \textbf{no}. Un m\'{i}nimo local del campo potencial es un punto $q^*$ donde $\mathbf{F}_\text{atr}(q^*) + \mathbf{F}_\text{rep}(q^*) = \mathbf{0}$. Modificar $\alpha$ y $\beta$ \textbf{escala} ambas componentes pero \textbf{no cambia la geometr\'{i}a} del campo: si las fuerzas se cancelan en $q^*$ con una pareja $(\alpha, \beta)$, tambi\'{e}n se cancelan con cualquier $(\lambda\alpha, \lambda\beta)$, y reescalar solo una de ellas como $(\alpha', \beta')$ desplaza el punto de cancelaci\'{o}n a otra ubicaci\'{o}n del entorno pero \textbf{no elimina el m\'{i}nimo}, simplemente lo translada. Modificar $D$ tampoco rompe el m\'{i}nimo: cambia qu\'{e} obst\'{a}culos contribuyen a la repulsi\'{o}n, pero la cancelaci\'{o}n vectorial se mantiene posible en cualquier configuraci\'{o}n con simetr\'{i}a (cuello en \textsf{U}, paredes enfrentadas, etc.).
+
+Por tanto, los m\'{i}nimos locales son una limitaci\'{o}n \textbf{estructural} del m\'{e}todo, no un defecto de calibraci\'{o}n. Su mitigaci\'{o}n requiere extender el algoritmo, por ejemplo con perturbaci\'{o}n aleatoria, navegaci\'{o}n tangencial o informaci\'{o}n global. La pr\'{a}ctica integradora Lab-MR 6 aborda esta cuesti\'{o}n a\~{n}adiendo un campo tangencial y una maniobra de escape activada por detecci\'{o}n de estancamiento.
 
 
 % =====================================================================
@@ -195,7 +213,7 @@ El rango de influencia $D$ act\'{u}a como filtro: incrementarlo hace que el robo
 Aunque la f\'{o}rmula~\eqref{eq:f_rep_i} se anula por construcci\'{o}n en $d_i = D$, evaluarla para todos los rayos del l\'{a}ser es ineficiente. \textbf{Soluci\'{o}n}: filtrar previamente por $d_i < D$ y solo iterar sobre obst\'{a}culos relevantes, con un coste despreciable en el resto.
 
 \paragraph{Problema 3: m\'{i}nimos locales.}
-En zonas donde la atracci\'{o}n y la repulsi\'{o}n se cancelan exactamente, el robot oscila o se detiene. \textbf{Soluci\'{o}n}: en esta pr\'{a}ctica solo se \textbf{detectan} (l\'{i}mite de $1000$ iteraciones); la mitigaci\'{o}n se aborda en Lab-MR6 mediante un campo tangencial y una maniobra de escape por estancamiento.
+En zonas donde la atracci\'{o}n y la repulsi\'{o}n se cancelan exactamente, el robot oscila o se detiene. \textbf{Soluci\'{o}n}: en esta pr\'{a}ctica solo se \textbf{detectan} (l\'{i}mite de $1000$ iteraciones); la mitigaci\'{o}n se aborda en Lab-MR 6 mediante un campo tangencial y una maniobra de escape por estancamiento.
 
 \subsection{Limitaciones del m\'{e}todo}
 \begin{itemize}[leftmargin=2em]
@@ -213,6 +231,6 @@ En zonas donde la atracci\'{o}n y la repulsi\'{o}n se cancelan exactamente, el r
 \section{Conclusiones}
 Se ha implementado un controlador de \textbf{navegaci\'{o}n reactiva por campos potenciales artificiales} que dirige al robot hacia un destino seleccionado evitando los obst\'{a}culos detectados por el l\'{a}ser. El controlador es simple, transparente y eficiente, y reproduce con fidelidad las propiedades te\'{o}ricas del m\'{e}todo: campo atractivo unitario hacia el destino, campo repulsivo que diverge en la frontera del obst\'{a}culo y se anula en la frontera de influencia, y combinaci\'{o}n vectorial directa para definir la direcci\'{o}n de avance.
 
-Las pruebas confirman que el m\'{e}todo es \textbf{eficaz} en escenarios moderadamente complejos pero \textbf{insuficiente} en presencia de configuraciones que generan m\'{i}nimos locales, donde la \'{u}nica salida es disponer de informaci\'{o}n global. Esta limitaci\'{o}n motiva la pr\'{a}ctica Lab-MR6, en la que la planificaci\'{o}n global (Dijkstra/A*) act\'{u}a como gu\'{i}a y los campos potenciales se reducen a la ejecuci\'{o}n local entre subobjetivos, complementados con un campo tangencial y una maniobra de escape por estancamiento.
+Las pruebas confirman que el m\'{e}todo es \textbf{eficaz} en escenarios moderadamente complejos pero \textbf{insuficiente} en presencia de configuraciones que generan m\'{i}nimos locales, donde la \'{u}nica salida es disponer de informaci\'{o}n global. Esta limitaci\'{o}n motiva la pr\'{a}ctica Lab-MR 6, en la que la planificaci\'{o}n global (Dijkstra/A*) act\'{u}a como gu\'{i}a y los campos potenciales se reducen a la ejecuci\'{o}n local entre subobjetivos, complementados con un campo tangencial y una maniobra de escape por estancamiento.
 
 \end{document}

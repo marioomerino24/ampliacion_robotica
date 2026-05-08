@@ -1,5 +1,5 @@
 % AMPLIACION DE ROBOTICA
-% PRACTICA 4: Navegacion local con campos potenciales
+% LAB-MR 3: Navegacion local con campos potenciales
 % Evitar obstaculos
 
 clc

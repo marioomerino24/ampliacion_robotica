@@ -15,8 +15,15 @@
 \usepackage{titlesec}
 \titleformat{\section}{\Large\bfseries}{\thesection.\ }{0.4em}{}
 \titleformat{\subsection}{\large\bfseries}{\thesubsection.\ }{0.4em}{}
-\titlespacing*{\section}{0pt}{1.6ex plus .5ex minus .2ex}{1.0ex}
-\titlespacing*{\subsection}{0pt}{1.2ex plus .5ex minus .2ex}{0.7ex}
+\titlespacing*{\section}{0pt}{3.8ex plus .5ex minus .2ex}{1.8ex plus .2ex}
+\titlespacing*{\subsection}{0pt}{2.8ex plus .5ex minus .2ex}{1.2ex plus .2ex}
+\titlespacing*{\paragraph}{0pt}{1.5ex plus .3ex minus .1ex}{0.8em}
+\AddToHook{cmd/section/before}{\Needspace{12\baselineskip}}
+\AddToHook{cmd/subsection/before}{\Needspace{8\baselineskip}}
+
+\setlength{\parskip}{0.7em}
+\setlength{\parindent}{0pt}
+\linespread{1.1}
 
 % ===== Colores =====
 \definecolor{UMABlue}{RGB}{0,51,102}
@@ -29,12 +36,17 @@
 \usepackage{tabularx}
 \usepackage{siunitx}
 \usepackage{float}
+\usepackage{subcaption}
+\usepackage{needspace}
 \usepackage{enumitem}
+\setlist{topsep=0.6em, itemsep=0.35em, parsep=0pt}
 \usepackage{listings}
 \usepackage[hidelinks]{hyperref}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta, decorations.markings, patterns}
 \sisetup{locale=DE}
+\addto\captionsspanish{\renewcommand{\tablename}{Tabla}}
+\addto\captionsspanish{\renewcommand{\listtablename}{\'{I}ndice de tablas}}
 
 % ===== Estilo para listados de código =====
 \lstset{

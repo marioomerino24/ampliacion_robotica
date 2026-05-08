@@ -13,29 +13,29 @@ Este documento resume, para cada práctica de robótica móvil, qué se entrega:
 
 | Lab | Directorio código | Memoria LaTeX | Estado código | Estado memoria |
 |---|---|---|---|---|
-| Lab-MR1.1 | [practica_1_1_seguimiento_de_caminos_explicitos](robotica_movil/practica_1_1_seguimiento_de_caminos_explicitos/) | [lab1_1_caminos_explicitos](memorias/robotica_movil/lab1_1_caminos_explicitos/) | Funcional | PDF compilado (sin figuras) |
-| Lab-MR1.2 | [practica_1_2_seguimiento_de_caminos_implicitos](robotica_movil/practica_1_2_seguimiento_de_caminos_implicitos/) | [lab1_2_caminos_implicitos](memorias/robotica_movil/lab1_2_caminos_implicitos/) | Funcional | PDF compilado + 2 figuras |
-| Lab-MR2 | [practica_2_percepcion_del_entorno](robotica_movil/practica_2_percepcion_del_entorno/) | [lab2_percepcion](memorias/robotica_movil/lab2_percepcion/) | Funcional | PDF compilado + 1 figura |
-| Lab-MR3 | [practica_3_evitar_obstaculos_mediante_campos_potenciales](robotica_movil/practica_3_evitar_obstaculos_mediante_campos_potenciales/) | [lab3_campos_potenciales](memorias/robotica_movil/lab3_campos_potenciales/) | Funcional (MATLAB) | Texto completo, figura pendiente |
-| Lab-MR4 | [practica_4_planificacion_de_caminos_i_dijkstra](robotica_movil/practica_4_planificacion_de_caminos_i_dijkstra/) | [lab4_dijkstra](memorias/robotica_movil/lab4_dijkstra/) | Implementación MATLAB | Texto completo, figura pendiente |
-| Lab-MR5 | [practica_5_planificacion_de_caminos_ii_a_estrella](robotica_movil/practica_5_planificacion_de_caminos_ii_a_estrella/) | [lab5_a_estrella](memorias/robotica_movil/lab5_a_estrella/) | `astar.m` reutilizado de P6 | Texto completo, figura pendiente |
-| Lab-MR6 | [practica_6_navegacion_autonoma](robotica_movil/practica_6_navegacion_autonoma/) | [lab6_navegacion_autonoma](memorias/robotica_movil/lab6_navegacion_autonoma/) | Completada (script integrado) | Texto completo, sin compilar PDF, sin figuras |
+| Lab-MR 1-I | [practica_1-I_seguimiento_de_caminos_explicitos](robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos/) | [lab1-I_caminos_explicitos](memorias/robotica_movil/lab1-I_caminos_explicitos/) | Funcional | PDF compilado (sin figuras) |
+| Lab-MR 1-II | [practica_1-II_seguimiento_de_caminos_implicitos](robotica_movil/practica_1-II_seguimiento_de_caminos_implicitos/) | [lab1-II_caminos_implicitos](memorias/robotica_movil/lab1-II_caminos_implicitos/) | Funcional | PDF compilado + 2 figuras |
+| Lab-MR 2 | [practica_2_percepcion_del_entorno](robotica_movil/practica_2_percepcion_del_entorno/) | [lab2_percepcion](memorias/robotica_movil/lab2_percepcion/) | Funcional | PDF compilado + 1 figura |
+| Lab-MR 3 | [practica_3_evitar_obstaculos_mediante_campos_potenciales](robotica_movil/practica_3_evitar_obstaculos_mediante_campos_potenciales/) | [lab3_campos_potenciales](memorias/robotica_movil/lab3_campos_potenciales/) | Funcional (MATLAB) | Texto completo, figura pendiente |
+| Lab-MR 4 | [practica_4_planificacion_de_caminos_i_dijkstra](robotica_movil/practica_4_planificacion_de_caminos_i_dijkstra/) | [lab4_dijkstra](memorias/robotica_movil/lab4_dijkstra/) | Implementación MATLAB | Texto completo, figura pendiente |
+| Lab-MR 5 | [practica_5_planificacion_de_caminos_ii_a_estrella](robotica_movil/practica_5_planificacion_de_caminos_ii_a_estrella/) | [lab5_a_estrella](memorias/robotica_movil/lab5_a_estrella/) | `astar.m` reutilizado de P6 | Texto completo, figura pendiente |
+| Lab-MR 6 | [practica_6_navegacion_completa](robotica_movil/practica_6_navegacion_completa/) | [lab6_navegacion_completa](memorias/robotica_movil/lab6_navegacion_completa/) | Completada (script integrado) | Texto completo, sin compilar PDF, sin figuras |
 
 ---
 
-## Lab-MR1.1 · Seguimiento de caminos explícitos
+## Lab-MR 1-I · Seguimiento de caminos explícitos
 
 **Objetivo.** Implementar navegación punto a punto (P2P) sobre un robot Pioneer P3DX simulado en CoppeliaSim, recorriendo una secuencia de waypoints con control proporcional sobre la odometría.
 
-### Código fuente — `robotica_movil/practica_1_1_seguimiento_de_caminos_explicitos/`
-- Paquete ROS 2: [seg_tray](robotica_movil/practica_1_1_seguimiento_de_caminos_explicitos/ros2_ws/seg_tray/)
-  - Nodo: [src/nav_p2p.cpp](robotica_movil/practica_1_1_seguimiento_de_caminos_explicitos/ros2_ws/seg_tray/src/nav_p2p.cpp) (251 líneas) — implementa el `controlLoop()` con cinemática diferencial.
-  - Launch: [launch/nav_p2p_launch.py](robotica_movil/practica_1_1_seguimiento_de_caminos_explicitos/ros2_ws/seg_tray/launch/nav_p2p_launch.py)
-  - Parámetros: [config/nav_params.yaml](robotica_movil/practica_1_1_seguimiento_de_caminos_explicitos/ros2_ws/seg_tray/config/nav_params.yaml)
+### Código fuente — `robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos/`
+- Paquete ROS 2: [seg_tray](robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos/ros2_ws/seg_tray/)
+  - Nodo: [src/nav_p2p.cpp](robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos/ros2_ws/seg_tray/src/nav_p2p.cpp) (251 líneas) — implementa el `controlLoop()` con cinemática diferencial.
+  - Launch: [launch/nav_p2p_launch.py](robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos/ros2_ws/seg_tray/launch/nav_p2p_launch.py)
+  - Parámetros: [config/nav_params.yaml](robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos/ros2_ws/seg_tray/config/nav_params.yaml)
   - `CMakeLists.txt`, `package.xml`
-- Escenas CoppeliaSim: [scenes/p2p_scene.ttt](robotica_movil/practica_1_1_seguimiento_de_caminos_explicitos/scenes/p2p_scene.ttt), [scenes/corridor_scene.ttt](robotica_movil/practica_1_1_seguimiento_de_caminos_explicitos/scenes/corridor_scene.ttt)
-- Enunciado: [enunciado/AmpRob_LabMR_1_I_seg_tray_pto_a_pto.pdf](robotica_movil/practica_1_1_seguimiento_de_caminos_explicitos/enunciado/AmpRob_LabMR_1_I_seg_tray_pto_a_pto.pdf)
-- Resumen de desarrollo: [desarrollo/resumen.txt](robotica_movil/practica_1_1_seguimiento_de_caminos_explicitos/desarrollo/resumen.txt)
+- Escenas CoppeliaSim: [scenes/p2p_scene.ttt](robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos/scenes/p2p_scene.ttt), [scenes/corridor_scene.ttt](robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos/scenes/corridor_scene.ttt)
+- Enunciado: [enunciado/AmpRob_LabMR_1_I_seg_tray_pto_a_pto.pdf](robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos/enunciado/AmpRob_LabMR_1_I_seg_tray_pto_a_pto.pdf)
+- Resumen de desarrollo: [desarrollo/resumen.txt](robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos/desarrollo/resumen.txt)
 
 ### Lo implementado
 - Cálculo del error de orientación `φ_e = atan2(Δy, Δx) − θ` con normalización a `[−π, π]`.
@@ -44,9 +44,9 @@ Este documento resume, para cada práctica de robótica móvil, qué se entrega:
 - Limitación de velocidad angular a `±0.79 rad/s`. Velocidad lineal fija `v=1.2 m/s`.
 - Detección de waypoint alcanzado por tolerancia y opción `loop_waypoints`.
 
-### Memoria — `memorias/robotica_movil/lab1_1_caminos_explicitos/`
-- [main.tex](memorias/robotica_movil/lab1_1_caminos_explicitos/main.tex) (238 líneas) — secciones de introducción, fundamentos, implementación y resultados.
-- [main.pdf](memorias/robotica_movil/lab1_1_caminos_explicitos/main.pdf) (217 KB) — compilado.
+### Memoria — `memorias/robotica_movil/lab1-I_caminos_explicitos/`
+- [main.tex](memorias/robotica_movil/lab1-I_caminos_explicitos/main.tex) (238 líneas) — secciones de introducción, fundamentos, implementación y resultados.
+- [main.pdf](memorias/robotica_movil/lab1-I_caminos_explicitos/main.pdf) (217 KB) — compilado.
 - Figuras: ninguna en `figures/` (la memoria no incorpora capturas).
 
 ### Pendiente / observaciones
@@ -55,18 +55,18 @@ Este documento resume, para cada práctica de robótica móvil, qué se entrega:
 
 ---
 
-## Lab-MR1.2 · Seguimiento de caminos implícitos
+## Lab-MR 1-II · Seguimiento de caminos implícitos
 
 **Objetivo.** Seguimiento de pasillo (corridor following) usando láser de barrido y un controlador Pure Pursuit con detección anticipada de curvas a la derecha.
 
-### Código fuente — `robotica_movil/practica_1_2_seguimiento_de_caminos_implicitos/`
-- Paquete ROS 2: [seg_tray](robotica_movil/practica_1_2_seguimiento_de_caminos_implicitos/ros2_ws/seg_tray/)
-  - Nodo: [src/corr_nav.cpp](robotica_movil/practica_1_2_seguimiento_de_caminos_implicitos/ros2_ws/seg_tray/src/corr_nav.cpp) (227 líneas)
-  - Launch: [launch/corr_nav_launch.py](robotica_movil/practica_1_2_seguimiento_de_caminos_implicitos/ros2_ws/seg_tray/launch/corr_nav_launch.py)
-  - Parámetros: [config/nav_params.yaml](robotica_movil/practica_1_2_seguimiento_de_caminos_implicitos/ros2_ws/seg_tray/config/nav_params.yaml), [config/corr_params.yaml](robotica_movil/practica_1_2_seguimiento_de_caminos_implicitos/ros2_ws/seg_tray/config/corr_params.yaml)
-- Escenas CoppeliaSim: [scenes/corridor_scene.ttt](robotica_movil/practica_1_2_seguimiento_de_caminos_implicitos/scenes/corridor_scene.ttt), [scenes/p2p_scene.ttt](robotica_movil/practica_1_2_seguimiento_de_caminos_implicitos/ros2_ws/seg_tray/scenes/p2p_scene.ttt)
-- Enunciado: [enunciado/AmpRob_LabMR_1_II_seg_pasillo.pdf](robotica_movil/practica_1_2_seguimiento_de_caminos_implicitos/enunciado/AmpRob_LabMR_1_II_seg_pasillo.pdf)
-- Resumen de desarrollo: [desarrollo/resumen.txt](robotica_movil/practica_1_2_seguimiento_de_caminos_implicitos/desarrollo/resumen.txt)
+### Código fuente — `robotica_movil/practica_1-II_seguimiento_de_caminos_implicitos/`
+- Paquete ROS 2: [seg_tray](robotica_movil/practica_1-II_seguimiento_de_caminos_implicitos/ros2_ws/seg_tray/)
+  - Nodo: [src/corr_nav.cpp](robotica_movil/practica_1-II_seguimiento_de_caminos_implicitos/ros2_ws/seg_tray/src/corr_nav.cpp) (227 líneas)
+  - Launch: [launch/corr_nav_launch.py](robotica_movil/practica_1-II_seguimiento_de_caminos_implicitos/ros2_ws/seg_tray/launch/corr_nav_launch.py)
+  - Parámetros: [config/nav_params.yaml](robotica_movil/practica_1-II_seguimiento_de_caminos_implicitos/ros2_ws/seg_tray/config/nav_params.yaml), [config/corr_params.yaml](robotica_movil/practica_1-II_seguimiento_de_caminos_implicitos/ros2_ws/seg_tray/config/corr_params.yaml)
+- Escenas CoppeliaSim: [scenes/corridor_scene.ttt](robotica_movil/practica_1-II_seguimiento_de_caminos_implicitos/scenes/corridor_scene.ttt), [scenes/p2p_scene.ttt](robotica_movil/practica_1-II_seguimiento_de_caminos_implicitos/ros2_ws/seg_tray/scenes/p2p_scene.ttt)
+- Enunciado: [enunciado/AmpRob_LabMR_1_II_seg_pasillo.pdf](robotica_movil/practica_1-II_seguimiento_de_caminos_implicitos/enunciado/AmpRob_LabMR_1_II_seg_pasillo.pdf)
+- Resumen de desarrollo: [desarrollo/resumen.txt](robotica_movil/practica_1-II_seguimiento_de_caminos_implicitos/desarrollo/resumen.txt)
 
 ### Lo implementado
 - `averageRangeInWindow()` para promediar lecturas láser por ventanas angulares (±90°, 0°, −45°).
@@ -76,19 +76,19 @@ Este documento resume, para cada práctica de robótica móvil, qué se entrega:
 - Detección anticipada de curvas a la derecha mediante el rayo a −45° → reduce velocidad a `v/8` y aplica `−ω_max`.
 - Parámetros: `corridor_width = 4.2 m`, `look_ahead_distance = 4.0 m`, `v_max = 1.0 m/s`.
 
-### Memoria — `memorias/robotica_movil/lab1_2_caminos_implicitos/`
-- [main.tex](memorias/robotica_movil/lab1_2_caminos_implicitos/main.tex) (262 líneas).
-- [main.pdf](memorias/robotica_movil/lab1_2_caminos_implicitos/main.pdf) (615 KB) — compilado.
+### Memoria — `memorias/robotica_movil/lab1-II_caminos_implicitos/`
+- [main.tex](memorias/robotica_movil/lab1-II_caminos_implicitos/main.tex) (262 líneas).
+- [main.pdf](memorias/robotica_movil/lab1-II_caminos_implicitos/main.pdf) (615 KB) — compilado.
 - Figuras:
-  - [figures/dibujo_rayos.png](memorias/robotica_movil/lab1_2_caminos_implicitos/figures/dibujo_rayos.png) — esquema de las ventanas angulares del láser.
-  - [figures/curvas.png](memorias/robotica_movil/lab1_2_caminos_implicitos/figures/curvas.png) — comportamiento ante curvas.
+  - [figures/dibujo_rayos.png](memorias/robotica_movil/lab1-II_caminos_implicitos/figures/dibujo_rayos.png) — esquema de las ventanas angulares del láser.
+  - [figures/curvas.png](memorias/robotica_movil/lab1-II_caminos_implicitos/figures/curvas.png) — comportamiento ante curvas.
 
 ### Pendiente / observaciones
 - `PROGRESO.md` y `README.md` siguen con plantilla por rellenar.
 
 ---
 
-## Lab-MR2 · Percepción del entorno
+## Lab-MR 2 · Percepción del entorno
 
 **Objetivo.** Sustituir el promediado de rayos por una estimación de paredes mediante regresión lineal por mínimos cuadrados, y reescribir el controlador Pure Pursuit usando esos modelos de pared.
 
@@ -120,7 +120,7 @@ Este documento resume, para cada práctica de robótica móvil, qué se entrega:
 
 ---
 
-## Lab-MR3 · Evitar obstáculos por campos potenciales
+## Lab-MR 3 · Evitar obstáculos por campos potenciales
 
 **Objetivo.** Navegación reactiva con campos potenciales artificiales en MATLAB, sobre mapa de ocupación binario y láser simulado por `rayIntersection`.
 
@@ -146,7 +146,7 @@ Este documento resume, para cada práctica de robótica móvil, qué se entrega:
 
 ---
 
-## Lab-MR4 · Planificación de caminos I (Dijkstra)
+## Lab-MR 4 · Planificación de caminos I (Dijkstra)
 
 **Objetivo.** Planificación global por Dijkstra sobre un grafo topológico almacenado en `grafos.mat`.
 
@@ -165,12 +165,12 @@ Este documento resume, para cada práctica de robótica móvil, qué se entrega:
 
 ---
 
-## Lab-MR5 · Planificación de caminos II (A*)
+## Lab-MR 5 · Planificación de caminos II (A*)
 
 **Objetivo.** A* con heurística euclídea consistente sobre el mismo grafo topológico, mediante construcción de una matriz de costes compatible con la métrica.
 
 ### Código fuente — `robotica_movil/practica_5_planificacion_de_caminos_ii_a_estrella/`
-- Carpeta MATLAB vacía (`.gitkeep`). La implementación funcional de A* vive en la práctica 6: [robotica_movil/practica_6_navegacion_autonoma/matlab/astar.m](robotica_movil/practica_6_navegacion_autonoma/matlab/astar.m) (108 líneas).
+- Carpeta MATLAB vacía (`.gitkeep`). La implementación funcional de A* vive en la práctica 6: [robotica_movil/practica_6_navegacion_completa/matlab/astar.m](robotica_movil/practica_6_navegacion_completa/matlab/astar.m) (108 líneas).
 - Enunciado: [enunciado/Práctica6_2024-2025.pdf](robotica_movil/practica_5_planificacion_de_caminos_ii_a_estrella/enunciado/Práctica6_2024-2025.pdf).
 - Resumen: [desarrollo/resumen.txt](robotica_movil/practica_5_planificacion_de_caminos_ii_a_estrella/desarrollo/resumen.txt).
 
@@ -184,15 +184,15 @@ Este documento resume, para cada práctica de robótica móvil, qué se entrega:
 
 ---
 
-## Lab-MR6 · Navegación autónoma (Dijkstra/A* + campos potenciales)
+## Lab-MR 6 · Navegación completa (Dijkstra/A* + campos potenciales)
 
 **Objetivo.** Integrar planificación global sobre grafo (Dijkstra o A*) con navegación local reactiva por campos potenciales, incluyendo mejoras anti-mínimos locales.
 
-### Código fuente — `robotica_movil/practica_6_navegacion_autonoma/`
-- Script principal: [matlab/navegacion_autonoma_p7.m](robotica_movil/practica_6_navegacion_autonoma/matlab/navegacion_autonoma_p7.m) (393 líneas).
-- Planificadores: [matlab/dijkstra.m](robotica_movil/practica_6_navegacion_autonoma/matlab/dijkstra.m) (122) y [matlab/astar.m](robotica_movil/practica_6_navegacion_autonoma/matlab/astar.m) (108).
-- Datos: [matlab/datos/mapa2.pgm](robotica_movil/practica_6_navegacion_autonoma/matlab/datos/mapa2.pgm), [matlab/datos/mapa2.m](robotica_movil/practica_6_navegacion_autonoma/matlab/datos/mapa2.m), [matlab/README_DATOS.md](robotica_movil/practica_6_navegacion_autonoma/matlab/README_DATOS.md).
-- Enunciado: [enunciado/Practica7_2024-2025.pdf](robotica_movil/practica_6_navegacion_autonoma/enunciado/Practica7_2024-2025.pdf).
+### Código fuente — `robotica_movil/practica_6_navegacion_completa/`
+- Script principal: [matlab/navegacion_autonoma_p7.m](robotica_movil/practica_6_navegacion_completa/matlab/navegacion_autonoma_p7.m) (393 líneas).
+- Planificadores: [matlab/dijkstra.m](robotica_movil/practica_6_navegacion_completa/matlab/dijkstra.m) (122) y [matlab/astar.m](robotica_movil/practica_6_navegacion_completa/matlab/astar.m) (108).
+- Datos: [matlab/datos/mapa2.pgm](robotica_movil/practica_6_navegacion_completa/matlab/datos/mapa2.pgm), [matlab/datos/mapa2.m](robotica_movil/practica_6_navegacion_completa/matlab/datos/mapa2.m), [matlab/README_DATOS.md](robotica_movil/practica_6_navegacion_completa/matlab/README_DATOS.md).
+- Enunciado: [enunciado/Practica7_2024-2025.pdf](robotica_movil/practica_6_navegacion_completa/enunciado/Practica7_2024-2025.pdf).
 
 ### Lo implementado
 - Pregunta interactiva al usuario: planificador (Dijkstra/A*) y nodos origen/destino.
@@ -201,8 +201,8 @@ Este documento resume, para cada práctica de robótica móvil, qué se entrega:
 - Detección de estancamiento por ventana temporal y maniobra de escape hacia pose libre con mayor despeje.
 - Manejo del caso conflictivo del enunciado (zona entre nodos 24–32).
 
-### Memoria — `memorias/robotica_movil/lab6_navegacion_autonoma/`
-- [main.tex](memorias/robotica_movil/lab6_navegacion_autonoma/main.tex) (126 líneas) — texto completo (introducción, implementación, resultados, conclusiones).
+### Memoria — `memorias/robotica_movil/lab6_navegacion_completa/`
+- [main.tex](memorias/robotica_movil/lab6_navegacion_completa/main.tex) (126 líneas) — texto completo (introducción, implementación, resultados, conclusiones).
 - **No hay `main.pdf` compilado todavía**.
 - `figures/` solo contiene `.gitkeep` — sin figuras.
 
@@ -223,21 +223,21 @@ Desde la raíz `colcon_ws/src/ampliacion_robotica/memorias/`:
 
 ```bash
 make all          # las 7 memorias
-make lab1_1       # Lab-MR1.1
-make lab1_2       # Lab-MR1.2
-make lab2         # Lab-MR2
-make lab3         # Lab-MR3
-make lab4         # Lab-MR4
-make lab5         # Lab-MR5
-make lab6         # Lab-MR6
+make lab1-I       # Lab-MR 1-I
+make lab1-II      # Lab-MR 1-II
+make lab2         # Lab-MR 2
+make lab3         # Lab-MR 3
+make lab4         # Lab-MR 4
+make lab5         # Lab-MR 5
+make lab6         # Lab-MR 6
 make upload       # sube los PDFs a Google Drive (rclone)
 ```
 
 ## Resumen de estado para la entrega
 
-**Listas para entregar (código + memoria PDF compilada con figuras):** Lab-MR1.1, Lab-MR1.2, Lab-MR2.
+**Listas para entregar (código + memoria PDF compilada con figuras):** Lab-MR 1-I, Lab-MR 1-II, Lab-MR 2.
 
 **Memoria redactada, falta compilar y añadir figura marcada como `\pendiente{}`:**
-- Lab-MR3, Lab-MR4, Lab-MR5, Lab-MR6.
+- Lab-MR 3, Lab-MR 4, Lab-MR 5, Lab-MR 6.
 
-**Acción restante para Lab-MR5 (código):** copiar `astar.m` desde `practica_6_navegacion_autonoma/matlab/` a `practica_5_planificacion_de_caminos_ii_a_estrella/matlab/` para que el código quede junto a su memoria.
+**Acción restante para Lab-MR 5 (código):** copiar `astar.m` desde `practica_6_navegacion_completa/matlab/` a `practica_5_planificacion_de_caminos_ii_a_estrella/matlab/` para que el código quede junto a su memoria.

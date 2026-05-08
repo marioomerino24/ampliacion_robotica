@@ -27,12 +27,12 @@ Auditoría del estado de las figuras en cada memoria, con **verificación visual
 
 ---
 
-## Lab-MR1.1 · Caminos explícitos (P2P)
+## Lab-MR 1-I · Caminos explícitos (P2P)
 
-**Carpeta:** [memorias/robotica_movil/lab1_1_caminos_explicitos/figures/](memorias/robotica_movil/lab1_1_caminos_explicitos/figures/) · **vacía**.
+**Carpeta:** [memorias/robotica_movil/lab1-I_caminos_explicitos/figures/](memorias/robotica_movil/lab1-I_caminos_explicitos/figures/) · **vacía**.
 
 ### Estado actual
-- ⚠️ Hueco `\pendiente{}` añadido en sección **Resultados experimentales · Análisis cualitativo** de [main.tex](memorias/robotica_movil/lab1_1_caminos_explicitos/main.tex), etiqueta `fig:p2p_recorrido`.
+- ⚠️ Hueco `\pendiente{}` añadido en sección **Resultados experimentales · Análisis cualitativo** de [main.tex](memorias/robotica_movil/lab1-I_caminos_explicitos/main.tex), etiqueta `fig:p2p_recorrido`.
 
 ### Lo que falta — `fig:p2p_recorrido`
 **Qué debe verse:**
@@ -45,19 +45,19 @@ Auditoría del estado de las figuras en cada memoria, con **verificación visual
 
 ---
 
-## Lab-MR1.2 · Caminos implícitos (corridor following)
+## Lab-MR 1-II · Caminos implícitos (corridor following)
 
-**Carpeta:** [memorias/robotica_movil/lab1_2_caminos_implicitos/figures/](memorias/robotica_movil/lab1_2_caminos_implicitos/figures/).
+**Carpeta:** [memorias/robotica_movil/lab1-II_caminos_implicitos/figures/](memorias/robotica_movil/lab1-II_caminos_implicitos/figures/).
 
 ### Estado actual ✅
-- 🖼️ [`dibujo_rayos.png`](memorias/robotica_movil/lab1_2_caminos_implicitos/figures/dibujo_rayos.png) (37 KB) — **esquema didáctico**: diagrama vectorial con el robot, paredes, distancias `d_left/d_right/d_front/d_right_ahead` y leyenda de los haces (frontal 0°, laterales ±90°, anticipación −45°). Referenciado como `fig:angulo`.
-- 📷 [`curvas.png`](memorias/robotica_movil/lab1_2_caminos_implicitos/figures/curvas.png) (260 KB) — **captura real de CoppeliaSim**: vista del Pioneer (rojo) sobre suelo cuadriculado, paredes de ladrillo y traza roja del recorrido en tramo recto + curva. Referenciada como `fig:trayectoria`.
+- 🖼️ [`dibujo_rayos.png`](memorias/robotica_movil/lab1-II_caminos_implicitos/figures/dibujo_rayos.png) (37 KB) — **esquema didáctico**: diagrama vectorial con el robot, paredes, distancias `d_left/d_right/d_front/d_right_ahead` y leyenda de los haces (frontal 0°, laterales ±90°, anticipación −45°). Referenciado como `fig:angulo`.
+- 📷 [`curvas.png`](memorias/robotica_movil/lab1-II_caminos_implicitos/figures/curvas.png) (260 KB) — **captura real de CoppeliaSim**: vista del Pioneer (rojo) sobre suelo cuadriculado, paredes de ladrillo y traza roja del recorrido en tramo recto + curva. Referenciada como `fig:trayectoria`.
 
 Memoria completa, sin huecos.
 
 ---
 
-## Lab-MR2 · Percepción del entorno
+## Lab-MR 2 · Percepción del entorno
 
 **Carpeta:** [memorias/robotica_movil/lab2_percepcion/figures/](memorias/robotica_movil/lab2_percepcion/figures/).
 
@@ -69,7 +69,7 @@ Memoria completa, sin huecos.
 
 ---
 
-## Lab-MR3 · Campos potenciales
+## Lab-MR 3 · Campos potenciales
 
 **Carpeta:** [memorias/robotica_movil/lab3_campos_potenciales/figures/](memorias/robotica_movil/lab3_campos_potenciales/figures/) · **vacía**.
 
@@ -93,7 +93,7 @@ Memoria completa, sin huecos.
 
 ---
 
-## Lab-MR4 · Dijkstra
+## Lab-MR 4 · Dijkstra
 
 **Carpeta:** [memorias/robotica_movil/lab4_dijkstra/figures/](memorias/robotica_movil/lab4_dijkstra/figures/) · **vacía**.
 
@@ -121,7 +121,7 @@ Guardar en `memorias/robotica_movil/lab4_dijkstra/figures/dijkstra_ruta.png`.
 
 ---
 
-## Lab-MR5 · A*
+## Lab-MR 5 · A*
 
 **Carpeta:** [memorias/robotica_movil/lab5_a_estrella/figures/](memorias/robotica_movil/lab5_a_estrella/figures/) · **vacía**.
 
@@ -148,12 +148,12 @@ Guardar como `memorias/robotica_movil/lab5_a_estrella/figures/astar_vs_dijkstra.
 
 ---
 
-## Lab-MR6 · Navegación autónoma
+## Lab-MR 6 · Navegación completa
 
-**Carpeta:** [memorias/robotica_movil/lab6_navegacion_autonoma/figures/](memorias/robotica_movil/lab6_navegacion_autonoma/figures/) · **vacía**.
+**Carpeta:** [memorias/robotica_movil/lab6_navegacion_completa/figures/](memorias/robotica_movil/lab6_navegacion_completa/figures/) · **vacía**.
 
 ### Estado actual
-- ⚠️ Dos huecos `\pendiente{}` añadidos en [main.tex](memorias/robotica_movil/lab6_navegacion_autonoma/main.tex):
+- ⚠️ Dos huecos `\pendiente{}` añadidos en [main.tex](memorias/robotica_movil/lab6_navegacion_completa/main.tex):
   - `fig:nav_caso_base` — sección **Resultados · Caso base del enunciado**.
   - `fig:nav_zona_24_32` — sección **Resultados · Mejora propuesta e implementada**.
 

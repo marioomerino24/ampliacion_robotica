@@ -2,6 +2,14 @@
 build/
 install/
 log/
+**/build/
+**/install/
+**/log/
+
+# === Videos (demasiado grandes para GitHub) ===
+*.mp4
+*.avi
+*.mkv
 *.pyc
 __pycache__/
 *.egg-info/
@@ -29,6 +37,9 @@ Thumbs.db
 .env
 venv/
 .venv/
+
+# === Dependencias externas (repos clonados) ===
+manipuladores/practica_1_planificacion_de_trayectorias_cartesianas/ros2_ws/cartesian_trajectory_planning/
 
 # === Symlinks creados por symlink_pkg.sh ===
 # (no ignorar: queremos trackear que existen)

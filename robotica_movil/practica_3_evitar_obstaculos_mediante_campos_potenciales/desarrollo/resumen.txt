@@ -1,5 +1,5 @@
 ================================================================================
-AMPLIACIÓN DE ROBÓTICA - LAB-MR 4: CAMPOS POTENCIALES
+AMPLIACIÓN DE ROBÓTICA - LAB-MR 3: CAMPOS POTENCIALES
 Resumen de Desarrollo - Navegación reactiva con evitación de obstáculos
 ================================================================================
 

@@ -1,4 +1,4 @@
-# Práctica 6: Navegación autónoma
+# Práctica 6: Navegación completa
 
 ## Objetivo
 
@@ -8,7 +8,7 @@ Integrar navegacion global (planificacion de caminos en grafo) y navegacion loca
 
 | Archivo | Descripcion |
 |---------|-------------|
-| `enunciado/Practica7_2024-2025.pdf` | Enunciado oficial de la practica 7 |
+| `enunciado/Practica7_2024-2025.pdf` | Enunciado oficial (Lab-MR 6 — Navegación completa) |
 | `matlab/navegacion_autonoma_p7.m` | Script principal completo (Dijkstra/A* + campos potenciales + mejora anti-minimos locales) |
 | `matlab/dijkstra.m` | Planificacion global por Dijkstra |
 | `matlab/astar.m` | Alternativa A* con heuristica consistente |

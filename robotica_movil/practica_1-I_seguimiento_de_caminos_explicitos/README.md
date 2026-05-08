@@ -1,4 +1,4 @@
-# Práctica 1.1: Seguimiento de caminos explícitos
+# Práctica 1-I: Seguimiento de caminos explícitos
 
 ## Objetivo
 
@@ -20,7 +20,7 @@
 
 ```bash
 # 1. Enlazar paquetes al workspace (desde la raiz del repo)
-./scripts/symlink_pkg.sh robotica_movil/practica_1_1_seguimiento_de_caminos_explicitos
+./scripts/symlink_pkg.sh robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos
 
 # 2. Compilar
 cd ~/colcon_ws && colcon build --symlink-install && source install/setup.bash

@@ -9,7 +9,7 @@
 % ===== Documento =====
 \begin{document}
 
-\portada{Lab-MR1.1}{Seguimiento de caminos expl\'{i}citos}%
+\portada{Lab-MR 1-I}{Seguimiento de caminos expl\'{i}citos}%
         {Navegaci\'{o}n punto a punto con control proporcional}
 
 \tableofcontents
@@ -104,7 +104,7 @@ donde $\epsilon$ es la tolerancia de proximidad.
 \section{Dise\~{n}o e implementaci\'{o}n}
 
 \subsection{Arquitectura del sistema}
-El sistema se compone de un \'{u}nico nodo \ros{} que se comunica con el simulador \coppelia{} a trav\'{e}s de topics est\'{a}ndar. El Cuadro~\ref{tab:nodos} resume la arquitectura.
+El sistema se compone de un \'{u}nico nodo \ros{} que se comunica con el simulador \coppelia{} a trav\'{e}s de topics est\'{a}ndar. La Tabla~\ref{tab:nodos} resume la arquitectura.
 
 \begin{table}[H]
   \centering
@@ -137,7 +137,7 @@ El flujo de control en cada iteraci\'{o}n es:
 La velocidad lineal se fija a $v = \SI{1.2}{\meter\per\second}$ y la ganancia proporcional a $K_p = 4.0$ en el c\'{o}digo. Las velocidades angulares de rueda se saturan a $\pm\SI{0.79}{\radian\per\second}$.
 
 \subsection{Parametrizaci\'{o}n}
-El Cuadro~\ref{tab:parametros} recoge los par\'{a}metros del sistema, configurables desde \texttt{nav\_params.yaml}.
+La Tabla~\ref{tab:parametros} recoge los par\'{a}metros del sistema, configurables desde \texttt{nav\_params.yaml}.
 
 \begin{table}[H]
   \centering
@@ -195,7 +195,7 @@ El robot se orienta r\'{a}pidamente hacia cada waypoint gracias a la ganancia $K
 
 \begin{figure}[H]
   \centering
-  \pendiente{Captura de \coppelia{} con la trayectoria del recorrido rectangular: vista cenital, el \pioneer{} y los 7 waypoints, con la traza acumulada del recorrido completo (preferiblemente con \texttt{loop\_waypoints} activo).}
+  \includegraphics[width=0.9\linewidth]{figure1_p1_1}
   \caption{Recorrido rectangular del \pioneer{} con control P2P en \coppelia{}.}
   \label{fig:p2p_recorrido}
 \end{figure}

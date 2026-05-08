@@ -32,11 +32,11 @@ Las memorias de cada practica estan disponibles como PDF compilado dentro del re
 
 | Práctica | Titulo | PDF | Video | Estado |
 |-----|--------|-----|-------|--------|
-| Práctica 1.1 | Seguimiento de caminos explícitos | [`main.pdf`](memorias/robotica_movil/lab1_1_caminos_explicitos/main.pdf) | - | Completada |
-| Práctica 1.2 | Seguimiento de caminos implícitos | [`main.pdf`](memorias/robotica_movil/lab1_2_caminos_implicitos/main.pdf) | [Drive](https://drive.google.com/file/d/1I6tOLcURG61m_-ohzUyiiBDkwep3uvLk/view) | Completada |
+| Práctica 1-I | Seguimiento de caminos explícitos | [`main.pdf`](memorias/robotica_movil/lab1-I_caminos_explicitos/main.pdf) | - | Completada |
+| Práctica 1-II | Seguimiento de caminos implícitos | [`main.pdf`](memorias/robotica_movil/lab1-II_caminos_implicitos/main.pdf) | [Drive](https://drive.google.com/file/d/1I6tOLcURG61m_-ohzUyiiBDkwep3uvLk/view) | Completada |
 | Práctica 2 | Percepción del entorno | [`main.pdf`](memorias/robotica_movil/lab2_percepcion/main.pdf) | [Drive](https://drive.google.com/file/d/1FnFhbGMeaFnEXlVtZfJK5_TjgRE5hLpe/view) | Completada |
 | Práctica 3 | Evitar obstáculos mediante campos potenciales | [`main.pdf`](memorias/robotica_movil/lab3_campos_potenciales/main.pdf) | - | Esqueleto |
-| Práctica 6 | Navegación autónoma | [`main.pdf`](memorias/robotica_movil/lab6_navegacion_autonoma/main.pdf) | - | Esqueleto |
+| Práctica 6 | Navegación completa | [`main.pdf`](memorias/robotica_movil/lab6_navegacion_completa/main.pdf) | - | Esqueleto |
 
 ### Manipuladores
 
@@ -52,8 +52,8 @@ Las memorias de cada practica estan disponibles como PDF compilado dentro del re
 
 | Práctica | Paquete ROS2 | Nodo principal | Descripcion |
 |-----|-------------|----------------|-------------|
-| Práctica 1.1 | `seg_tray` | `nav_p2p` | Navegacion punto a punto con control proporcional |
-| Práctica 1.2 | `seg_tray` | `corr_nav` | Corridor-following con Pure Pursuit y LiDAR |
+| Práctica 1-I | `seg_tray` | `nav_p2p` | Navegacion punto a punto con control proporcional |
+| Práctica 1-II | `seg_tray` | `corr_nav` | Corridor-following con Pure Pursuit y LiDAR |
 | Práctica 2 | `seg_tray` | `corr_nav_wall` | Estimacion de paredes por minimos cuadrados |
 | Práctica 3 | - | MATLAB script | Campos potenciales artificiales |
 | Práctica 4 | - | `dijkstra.m` | Planificacion global en grafos mediante Dijkstra |
@@ -75,8 +75,8 @@ cd memorias
 make all
 
 # Compilar una practica concreta
-make lab1_1     # Práctica 1.1 (caminos explícitos)
-make lab1_2     # Práctica 1.2 (caminos implícitos)
+make lab1-I     # Práctica 1-I (caminos explícitos)
+make lab1-II    # Práctica 1-II (caminos implícitos)
 make lab2       # Práctica 2
 make lab3       # Práctica 3
 make lab6       # Práctica 6
@@ -92,10 +92,10 @@ make clean
 
 ```bash
 # Enlazar todos los paquetes de una practica
-./scripts/symlink_pkg.sh robotica_movil/practica_1_1_seguimiento_de_caminos_explicitos
+./scripts/symlink_pkg.sh robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos
 
 # Desenlazar
-./scripts/symlink_pkg.sh --remove robotica_movil/practica_1_1_seguimiento_de_caminos_explicitos
+./scripts/symlink_pkg.sh --remove robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos
 ```
 
 ### Compilar codigo ROS2 dentro del contenedor
@@ -109,10 +109,10 @@ source install/setup.bash
 ### Ejecutar una practica
 
 ```bash
-# Práctica 1.1: navegacion punto a punto
+# Práctica 1-I: navegacion punto a punto
 ros2 launch seg_tray nav_p2p_launch.py
 
-# Práctica 1.2: corridor following
+# Práctica 1-II: corridor following
 ros2 launch seg_tray corr_nav_launch.py
 
 # Práctica 2: corridor following con estimacion de paredes

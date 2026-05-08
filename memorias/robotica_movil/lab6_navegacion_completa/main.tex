@@ -1,0 +1,257 @@
+\documentclass[12pt]{article}
+
+% ===== Configuración común =====
+\newcommand{\commonpath}{../../common}
+\input{\commonpath/preamble}
+\input{\commonpath/commands}
+\graphicspath{{figures/}{\commonpath/img/}}
+
+% ===== Documento =====
+\begin{document}
+
+\portada{Lab-MR 6}{Navegaci\'{o}n completa}%
+        {Planificaci\'{o}n global (Dijkstra/A*) y navegaci\'{o}n local reactiva por campos potenciales}
+
+\tableofcontents
+\clearpage
+
+
+% =====================================================================
+%  1. INTRODUCCIÓN
+% =====================================================================
+\section{Introducci\'{o}n}
+
+\subsection{Objetivo de la pr\'{a}ctica}
+El objetivo es resolver la \textbf{navegaci\'{o}n aut\'{o}noma completa} de un robot m\'{o}vil sobre un mapa con obst\'{a}culos integrando, en un \'{u}nico programa, dos niveles funcionales: una \textbf{planificaci\'{o}n global} sobre un grafo topol\'{o}gico (Dijkstra o A*) que determina la secuencia de nodos a visitar y una \textbf{navegaci\'{o}n local reactiva} basada en campos potenciales que ejecuta cada tramo evitando obst\'{a}culos detectados por el l\'{a}ser.
+
+\subsection{Descripci\'{o}n del problema}
+Dado un mapa de ocupaci\'{o}n binario $\mathcal{M}$ y un grafo topol\'{o}gico $\mathcal{G} = (\mathcal{V}, \mathcal{E})$ cuyos $N$ nodos est\'{a}n posicionados en el plano del mapa, junto con una matriz de costes $C \in \mathbb{R}^{N\times N}$, se desea desplazar un robot puntual desde un nodo origen $s$ hasta un nodo destino $t$ satisfaciendo simult\'{a}neamente:
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Optimalidad global}: la secuencia de nodos visitada debe corresponder a una ruta de coste m\'{i}nimo en $\mathcal{G}$.
+  \item \textbf{Seguridad local}: en cada tramo entre dos nodos consecutivos, el robot debe evitar obst\'{a}culos de $\mathcal{M}$ usando \'{u}nicamente informaci\'{o}n sensorial inmediata.
+  \item \textbf{Detecci\'{o}n de fallos}: el sistema debe diagnosticar y se\~{n}alizar los casos en los que la navegaci\'{o}n local no logra alcanzar un subobjetivo (m\'{i}nimos locales, colisiones inevitables).
+\end{enumerate}
+
+La pr\'{a}ctica integra los algoritmos desarrollados en Lab-MR 3 (campos potenciales), Lab-MR 4 (Dijkstra) y Lab-MR 5 (A*), a\~{n}adiendo dos componentes nuevos: un \textbf{campo tangencial} para mitigar m\'{i}nimos locales y una \textbf{maniobra de escape} cuando el robot detecta estancamiento.
+
+
+% =====================================================================
+%  2. FUNDAMENTOS TEÓRICOS
+% =====================================================================
+\section{Fundamentos te\'{o}ricos}
+
+\subsection{Arquitectura jer\'{a}rquica de navegaci\'{o}n}
+La separaci\'{o}n entre planificaci\'{o}n global y navegaci\'{o}n local es un patr\'{o}n cl\'{a}sico en rob\'{o}tica m\'{o}vil. El planificador global opera sobre una representaci\'{o}n topol\'{o}gica abstracta y garantiza optimalidad respecto a un criterio de coste (distancia, tiempo, energ\'{i}a). El controlador local, en cambio, trabaja sobre la geometr\'{i}a real percibida por el sensor y se ocupa de la evitaci\'{o}n de obst\'{a}culos y del seguimiento de la trayectoria de referencia.
+
+Esta separaci\'{o}n confiere robustez (un fallo local no requiere replanificaci\'{o}n global) y permite reutilizar componentes desarrollados en pr\'{a}cticas previas como bloques independientes.
+
+\subsection{Planificaci\'{o}n global: Dijkstra y A*}
+Para la capa global se reutilizan las funciones desarrolladas en Lab-MR 4 y Lab-MR 5:
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{dijkstra(C, s, t)}: ruta de coste m\'{i}nimo sobre la matriz de costes original.
+  \item \texttt{astar(C\_eucl, XY, s, t)}: A* con heur\'{i}stica eucl\'{i}dea sobre la matriz $C^{\text{eucl}}$ construida a partir de las coordenadas de los nodos.
+\end{itemize}
+
+Como la heur\'{i}stica eucl\'{i}dea solo es consistente cuando los pesos coinciden con la m\'{e}trica eucl\'{i}dea, A* se aplica sobre la matriz transformada
+\begin{equation}
+  C^{\text{eucl}}_{ij} = \begin{cases} \lVert p_i - p_j\rVert_2 & \text{si existe arco } (i,j),\\[2pt] 0 & \text{en caso contrario,}\end{cases}
+  \label{eq:c_eucl}
+\end{equation}
+manteniendo la topolog\'{i}a de $\mathcal{G}$ pero con costes geom\'{e}tricos. La salida de ambos planificadores es la misma: un coste total y una secuencia de \'{i}ndices de nodos que define los \textbf{subobjetivos} para la capa local.
+
+\subsection{Campos potenciales con componente tangencial}
+Sobre la base te\'{o}rica de Lab-MR 3 (campo atractivo $\mathbf{F}_{\text{att}}$ y repulsivo $\mathbf{F}_{\text{rep}}$ que diverge en $d\to 0$ y se anula en $d = D$), esta pr\'{a}ctica a\~{n}ade un \textbf{campo tangencial} cuyo prop\'{o}sito es facilitar el bordeado de obst\'{a}culos cuando atracci\'{o}n y repulsi\'{o}n est\'{a}n alineadas.
+
+Sea $q_\text{near}$ el obst\'{a}culo m\'{a}s cercano dentro del rango de influencia y $\mathbf{v}_\text{obs} = q_\text{near} - q$ el vector del robot al obst\'{a}culo. La direcci\'{o}n tangencial se elige perpendicular a $\mathbf{v}_\text{obs}$ y orientada hacia el lado en el que se encuentra el subobjetivo, mediante el signo del producto vectorial entre el vector unitario al objetivo $\hat{\mathbf{v}}_\text{goal}$ y $\mathbf{v}_\text{obs}$:
+\begin{equation}
+  s = \operatorname{sign}\!\left( \hat{v}_{\text{goal},x}\, v_{\text{obs},y} - \hat{v}_{\text{goal},y}\, v_{\text{obs},x} \right)
+  \label{eq:sign_tan}
+\end{equation}
+
+\begin{equation}
+  \hat{\mathbf{t}} = \begin{cases}
+    (-\hat{v}_{\text{obs},y},\; \hat{v}_{\text{obs},x}) & \text{si } s > 0,\\
+    (\hat{v}_{\text{obs},y},\; -\hat{v}_{\text{obs},x}) & \text{si } s \leq 0.
+  \end{cases}
+  \label{eq:tan_unit}
+\end{equation}
+
+La magnitud se modula por la cercan\'{i}a al obst\'{a}culo:
+\begin{equation}
+  \mathbf{F}_\text{tan} = \gamma_\text{tan}\, \max\!\left(0,\; 1 - \frac{d_\text{near}}{D}\right) \hat{\mathbf{t}}
+  \label{eq:f_tan}
+\end{equation}
+
+La fuerza resultante es la suma vectorial:
+\begin{equation}
+  \mathbf{F}_\text{res} = \mathbf{F}_\text{att} + \mathbf{F}_\text{rep} + \mathbf{F}_\text{tan}
+  \label{eq:f_res}
+\end{equation}
+
+\subsection{Detecci\'{o}n de estancamiento y maniobra de escape}
+Aunque el campo tangencial reduce la frecuencia de m\'{i}nimos locales, no los elimina por completo. Para los casos residuales se introduce un mecanismo de detecci\'{o}n basado en el \textbf{progreso} reciente: se mantiene una ventana deslizante con las \'{u}ltimas $W$ distancias al subobjetivo, y se considera estancamiento cuando el progreso acumulado $\Delta d = d_{\text{ini}} - d_{\text{fin}}$ es inferior a un umbral $\Delta_\text{min}$.
+
+Al detectar estancamiento se ejecuta una \textbf{maniobra de escape}: se prueban $K$ \'{a}ngulos uniformemente distribuidos alrededor de la direcci\'{o}n hacia el subobjetivo, se descartan los que conducen a colisi\'{o}n y se selecciona el que maximiza una puntuaci\'{o}n combinada de \textbf{despeje} (mediana de las distancias l\'{a}ser tras el desplazamiento) y \textbf{cercan\'{i}a al subobjetivo}:
+\begin{equation}
+  \text{score}(a) = 0.7\,\bar{d}_\text{lidar}(a) - 0.3\,\lVert q_\text{sub} - q(a)\rVert
+  \label{eq:score_escape}
+\end{equation}
+
+Si todas las direcciones conducen a colisi\'{o}n, el subobjetivo se declara inalcanzable y la navegaci\'{o}n termina con fallo controlado. Tras un n\'{u}mero m\'{a}ximo de eventos de estancamiento, se diagnostica m\'{i}nimo local y se aborta el tramo.
+
+
+% =====================================================================
+%  3. DISEÑO E IMPLEMENTACIÓN
+% =====================================================================
+\section{Dise\~{n}o e implementaci\'{o}n}
+
+\subsection{Arquitectura del sistema}
+La soluci\'{o}n se implementa en un \'{u}nico script de \matlab{} (\texttt{navegacion\_autonoma\_p7.m}) organizado en cinco fases secuenciales:
+\begin{enumerate}[leftmargin=2em]
+  \item Carga del mapa de ocupaci\'{o}n y del grafo topol\'{o}gico.
+  \item Selecci\'{o}n interactiva del planificador, origen y destino.
+  \item Planificaci\'{o}n global (Dijkstra o A* sobre $C^{\text{eucl}}$).
+  \item Bucle de navegaci\'{o}n local por subobjetivos.
+  \item Visualizaci\'{o}n de resultados y log de tramos.
+\end{enumerate}
+
+Las funciones cr\'{i}ticas (\texttt{calcular\_campos}, \texttt{maniobra\_escape}, \texttt{hay\_colision}, \texttt{construir\_costes\_euclideos}) se definen como funciones locales en el mismo script, y la planificaci\'{o}n global se delega en las funciones \texttt{dijkstra.m} y \texttt{astar.m} desarrolladas en pr\'{a}cticas anteriores.
+
+\subsection{Datos de entrada}
+Se utilizan los ficheros proporcionados por el enunciado:
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{mapa2.pgm}: imagen binaria del mapa de ocupaci\'{o}n.
+  \item \texttt{mapa2.m}: script que define las variables \texttt{nodos} (matriz $N\times 3$ con $[id, x, y]$) y \texttt{costes} (matriz $N\times N$ de adyacencia ponderada).
+\end{itemize}
+
+El mapa se convierte en un \texttt{binaryOccupancyMap} y el grafo se carga ejecutando el script con \texttt{run()}. Las dimensiones se validan antes del bucle principal.
+
+\subsection{Bucle de navegaci\'{o}n por subobjetivo}
+La funci\'{o}n \texttt{navegar\_hasta\_subobjetivo} ejecuta un bucle iterativo de hasta $\text{max\_iter\_seg} = 1200$ pasos. En cada iteraci\'{o}n:
+\begin{enumerate}[leftmargin=2em]
+  \item Comprueba si la distancia al subobjetivo es inferior a la tolerancia $\text{goal\_tol}$. Si es as\'{i}, retorna con \'{e}xito.
+  \item Lee el l\'{a}ser simulado mediante \texttt{rayIntersection} sobre el mapa.
+  \item Calcula los tres campos (\eqref{eq:f_res}) y la fuerza resultante.
+  \item Si $\lVert\mathbf{F}_\text{res}\rVert < \text{min\_force}$, lanza la maniobra de escape.
+  \item Calcula la pose candidata avanzando un paso de longitud $\min(v, d_\text{goal})$ en la direcci\'{o}n de $\mathbf{F}_\text{res}$.
+  \item Verifica colisi\'{o}n en la pose candidata; si la hay, lanza maniobra de escape.
+  \item Actualiza el historial de progreso. Si la ventana de $W$ pasos no acumula progreso suficiente, incrementa el contador de estancamientos y ejecuta una maniobra de escape correctora.
+  \item Si el contador alcanza $\text{max\_stuck\_events}$, declara m\'{i}nimo local y aborta.
+\end{enumerate}
+
+\subsection{Detecci\'{o}n de colisiones}
+La funci\'{o}n \texttt{hay\_colision} no comprueba un \'{u}nico punto sino un \textbf{est\'{e}ncil de 9 puntos} (centro, 4 cardinales y 4 diagonales) a distancia \texttt{collision\_margin}. Esto modela impl\'{i}citamente un radio de seguridad del robot y previene colisiones por aproximaci\'{o}n a esquinas.
+
+\subsection{Maniobra de escape}
+La funci\'{o}n \texttt{maniobra\_escape} prueba $K = 16$ direcciones equiespaciadas alrededor de la direcci\'{o}n al subobjetivo, descarta las que colisionan, y de las restantes selecciona la de mayor puntuaci\'{o}n seg\'{u}n la ecuaci\'{o}n~\eqref{eq:score_escape}. Si ninguna direcci\'{o}n es viable, retorna fallo y el bucle local lo propaga como motivo del aborto.
+
+\subsection{Par\'{a}metros utilizados}
+La Tabla~\ref{tab:parametros_p7} recoge los valores empleados, calibrados emp\'{i}ricamente sobre \texttt{mapa2.pgm}.
+
+\begin{table}[H]
+  \centering
+  \caption{Par\'{a}metros del controlador integrado de navegaci\'{o}n aut\'{o}noma.}
+  \label{tab:parametros_p7}
+  \begin{tabularx}{0.98\linewidth}{l c X}
+    \toprule
+    \textbf{Par\'{a}metro} & \textbf{Valor} & \textbf{Descripci\'{o}n} \\
+    \midrule
+    $v$                       & $0.45$  & Paso lineal por iteraci\'{o}n. \\
+    $D$                       & $6.5$   & Rango de influencia repulsiva. \\
+    $\alpha$                  & $1.4$   & Coeficiente del campo atractivo. \\
+    $\beta$                   & $200$   & Coeficiente del campo repulsivo. \\
+    $\gamma_\text{tan}$       & $0.45$  & Coeficiente del campo tangencial. \\
+    $r_\text{max}$            & $12$    & Alcance m\'{a}ximo del l\'{a}ser. \\
+    rango angular             & $[-\pi/2,\,\pi/2]$ & Sector explorado por el l\'{a}ser. \\
+    $\text{goal\_tol}$        & $0.75$  & Tolerancia de llegada a subobjetivo. \\
+    $\text{collision\_margin}$& $0.60$  & Radio del est\'{e}ncil de colisi\'{o}n. \\
+    $W$                       & $40$    & Tama\~{n}o de la ventana de progreso. \\
+    $\Delta_\text{min}$       & $0.40$  & Progreso m\'{i}nimo en la ventana. \\
+    $\text{max\_stuck\_events}$ & $4$   & Estancamientos antes de declarar m\'{i}nimo local. \\
+    $\text{escape\_step}$     & $1.00$  & Longitud del paso de escape. \\
+    $K$                       & $16$    & Direcciones probadas en la maniobra de escape. \\
+    iter. m\'{a}x.\ por tramo & $1200$  & L\'{i}mite por subobjetivo. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+
+% =====================================================================
+%  4. RESULTADOS EXPERIMENTALES
+% =====================================================================
+\section{Resultados experimentales}
+
+\subsection{Caso base}
+Se ha evaluado el sistema sobre el mapa \texttt{mapa2.pgm} con el grafo \texttt{mapa2.m}, eligiendo como destino por defecto el nodo de la zona superior derecha (m\'{a}xima coordenada $x+y$). Tanto Dijkstra como A* producen rutas coincidentes en coste sobre $C^{\text{eucl}}$, y la fase local recorre los subobjetivos sin incidentes en la mayor\'{i}a de las trayectorias.
+
+\begin{figure}[H]
+  \centering
+  \pendiente{Captura sobre \texttt{mapa2.pgm} con los nodos del grafo dibujados, la ruta global de Dijkstra (o A*) en azul/amarillo y la trayectoria local roja del robot superpuesta. Caso t\'{i}pico que llega al destino.}
+  \caption{Caso base: planificaci\'{o}n global Dijkstra/A* + navegaci\'{o}n local por campos potenciales sobre \texttt{mapa2.pgm}.}
+  \label{fig:nav_caso_base}
+\end{figure}
+
+\subsection{Zona conflictiva entre nodos 24 y 32}
+El enunciado destaca la regi\'{o}n entre los nodos 24 y 32 como caso de estudio para los m\'{i}nimos locales. En esta zona el pasillo es estrecho y los obst\'{a}culos est\'{a}n dispuestos de forma aproximadamente sim\'{e}trica respecto al eje del robot, lo que genera tres modos de fallo:
+\begin{itemize}[leftmargin=2em]
+  \item equilibrio entre $\mathbf{F}_\text{att}$ y $\mathbf{F}_\text{rep}$, con $\lVert\mathbf{F}_\text{res}\rVert \approx 0$,
+  \item oscilaciones laterales entre las dos paredes,
+  \item proximidad simult\'{a}nea a obst\'{a}culos por ambos lados que activa el est\'{e}ncil de colisi\'{o}n.
+\end{itemize}
+
+Con la versi\'{o}n b\'{a}sica (sin $\mathbf{F}_\text{tan}$ ni maniobra de escape), el robot se queda atascado de forma reproducible en esta zona. Con la versi\'{o}n mejorada, el campo tangencial empuja al robot hacia uno de los dos lados y, si a\'{u}n as\'{i} se detecta estancamiento, la maniobra de escape selecciona una direcci\'{o}n con mayor despeje. La diferencia es cualitativamente clara.
+
+\begin{figure}[H]
+  \centering
+  \pendiente{Dos subpaneles del mismo origen-destino que atraviesan la zona 24--32: izquierda sin mejora (campos potenciales puros, trayectoria atascada u oscilante); derecha con mejora (campo tangencial + maniobra de escape, trayectoria que llega al destino). Anotar iteraciones y \'{e}xito/fallo.}
+  \caption{Comparativa en la zona conflictiva 24--32: navegaci\'{o}n b\'{a}sica frente a navegaci\'{o}n con mejora anti-m\'{i}nimos locales.}
+  \label{fig:nav_zona_24_32}
+\end{figure}
+
+\subsection{Diagn\'{o}stico por tramo}
+El script genera un \textbf{log} con el motivo de finalizaci\'{o}n de cada tramo (\texttt{ok}, \texttt{minimo\_local}, \texttt{colision\_sin\_escape}, \texttt{fuerza\_nula\_sin\_escape}, \texttt{max\_iter}). Esta traza facilita identificar qu\'{e} subobjetivo es problem\'{a}tico y orienta la calibraci\'{o}n posterior de los par\'{a}metros.
+
+
+% =====================================================================
+%  5. DISCUSIÓN
+% =====================================================================
+\section{Discusi\'{o}n}
+
+\subsection{Decisiones de dise\~{n}o}
+
+\paragraph{Elecci\'{o}n del campo tangencial frente a perturbaci\'{o}n aleatoria.}
+Una alternativa cl\'{a}sica para evitar m\'{i}nimos locales es a\~{n}adir ruido aleatorio a la fuerza resultante. El campo tangencial es preferible porque es \textbf{determinista} (reproducible entre ejecuciones) y est\'{a} \textbf{geom\'{e}tricamente motivado}: orienta el escape hacia el lado donde se encuentra el subobjetivo, no en una direcci\'{o}n arbitraria.
+
+\paragraph{Doble red de seguridad.}
+La detecci\'{o}n de colisi\'{o}n por est\'{e}ncil de 9 puntos y la verificaci\'{o}n previa al avance forman dos l\'{i}neas de defensa independientes. Aunque el campo repulsivo deber\'{i}a ser suficiente en teor\'{i}a, en la pr\'{a}ctica las discretizaciones del paso lineal y del l\'{a}ser pueden producir aproximaciones a esquinas que el campo continuo no detecta a tiempo.
+
+\paragraph{Detecci\'{o}n de estancamiento por progreso, no por velocidad.}
+Medir el estancamiento como falta de \textbf{progreso} hacia el subobjetivo (no como velocidad nula) es m\'{a}s robusto: el robot puede estar movi\'{e}ndose r\'{a}pido en oscilaciones laterales sin acercarse al objetivo, y la m\'{e}trica de progreso lo detecta correctamente.
+
+\subsection{Limitaciones}
+\begin{itemize}[leftmargin=2em]
+  \item El \textbf{campo tangencial} puede introducir \textbf{rodeos innecesarios} en pasillos amplios donde el m\'{e}todo b\'{a}sico ya funciona. La modulaci\'{o}n por $1 - d_\text{near}/D$ atenu\'{a} este efecto pero no lo elimina.
+  \item La \textbf{maniobra de escape} es local: no almacena memoria de zonas problem\'{a}ticas, por lo que el robot puede volver a entrar en la misma trampa si el subobjetivo lo arrastra.
+  \item El \textbf{paso lineal fijo} $v$ no se adapta a la cercan\'{i}a de obst\'{a}culos. En zonas estrechas un paso adaptativo reducir\'{i}a el riesgo de colisi\'{o}n.
+  \item La \textbf{planificaci\'{o}n global no contempla obst\'{a}culos din\'{a}micos} ni cierres de paso: si una arista del grafo es transitable en teor\'{i}a pero el pasillo correspondiente est\'{a} bloqueado, el sistema no replanifica.
+  \item El l\'{a}ser simulado tiene rango angular $[-\pi/2, \pi/2]$, por lo que los obst\'{a}culos por detr\'{a}s del robot son invisibles. Esto es coherente con el enfoque reactivo pero impide reculadas seguras.
+\end{itemize}
+
+
+% =====================================================================
+%  6. CONCLUSIONES
+% =====================================================================
+\section{Conclusiones}
+Se ha desarrollado un sistema integrado de navegaci\'{o}n aut\'{o}noma que combina planificaci\'{o}n global y control reactivo en un \'{u}nico programa \matlab{}, reutilizando como bloques los algoritmos desarrollados en pr\'{a}cticas anteriores (Dijkstra, A* y campos potenciales). Las contribuciones espec\'{i}ficas de esta pr\'{a}ctica son:
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Integraci\'{o}n jer\'{a}rquica}: la ruta del planificador global act\'{u}a como secuencia de subobjetivos para la capa local, con diagn\'{o}stico independiente por tramo.
+  \item \textbf{Campo tangencial} para mitigar m\'{i}nimos locales sin recurrir a aleatoriedad, orientado seg\'{u}n el producto vectorial entre la direcci\'{o}n al subobjetivo y la direcci\'{o}n al obst\'{a}culo m\'{a}s cercano.
+  \item \textbf{Detecci\'{o}n de estancamiento} mediante ventana deslizante de progreso, m\'{a}s robusta que la detecci\'{o}n por velocidad nula.
+  \item \textbf{Maniobra de escape} con selecci\'{o}n basada en una puntuaci\'{o}n combinada de despeje y cercan\'{i}a al subobjetivo, evaluada sobre $K$ direcciones candidatas.
+  \item \textbf{Selecci\'{o}n entre Dijkstra y A*} en tiempo de ejecuci\'{o}n, con construcci\'{o}n autom\'{a}tica de la matriz $C^{\text{eucl}}$ para garantizar consistencia de la heur\'{i}stica.
+\end{enumerate}
+
+Las pruebas en la zona conflictiva 24--32 confirman que la combinaci\'{o}n campo tangencial + maniobra de escape es eficaz para superar configuraciones que el m\'{e}todo b\'{a}sico no resuelve. Como trabajo futuro se plantea la incorporaci\'{o}n de un planificador local m\'{a}s elaborado (Dynamic Window Approach), un paso lineal adaptativo a la cercan\'{i}a de obst\'{a}culos, y un mecanismo de replanificaci\'{o}n global ante bloqueos persistentes detectados por la capa local.
+
+\end{document}

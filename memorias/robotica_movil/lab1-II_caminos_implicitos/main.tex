@@ -9,7 +9,7 @@
 % ===== Documento =====
 \begin{document}
 
-\portada{Lab-MR1.2}{Seguimiento de trayectorias impl\'{i}citas}%
+\portada{Lab-MR 1-II}{Seguimiento de trayectorias impl\'{i}citas}%
         {Corridor-following con LiDAR y Pure Pursuit}
 
 \tableofcontents
@@ -94,7 +94,7 @@ El \textbf{signo} de $\theta$ se determina comparando lecturas a $\pm 15^\circ$ 
 \section{Dise\~{n}o e implementaci\'{o}n}
 
 \subsection{Arquitectura del sistema}
-El sistema se compone de un \'{u}nico nodo \ros{} que se comunica con \coppelia{} mediante tres topics. El Cuadro~\ref{tab:nodos} resume la arquitectura.
+El sistema se compone de un \'{u}nico nodo \ros{} que se comunica con \coppelia{} mediante tres topics. La Tabla~\ref{tab:nodos} resume la arquitectura.
 
 \begin{table}[H]
   \centering
@@ -139,7 +139,7 @@ En este modo se aplica velocidad lineal reducida y giro m\'{a}ximo a la derecha:
 La lectura de anticipaci\'{o}n a $-45^\circ$ es clave: al tener componente frontal, detecta la apertura del pasillo \textbf{antes} de que el haz a $-90^\circ$ la perciba.
 
 \subsection{Parametrizaci\'{o}n}
-Los par\'{a}metros se cargan desde \texttt{corr\_params.yaml}. El Cuadro~\ref{tab:parametros} recoge los valores finales.
+Los par\'{a}metros se cargan desde \texttt{corr\_params.yaml}. La Tabla~\ref{tab:parametros} recoge los valores finales.
 
 \begin{table}[H]
   \centering
@@ -186,7 +186,7 @@ El controlador se ha evaluado en los mundos de \coppelia{} proporcionados para l
   \end{tabularx}
 \end{table}
 
-El Cuadro~\ref{tab:velocidades} resume las velocidades comandadas en cada modo.
+La Tabla~\ref{tab:velocidades} resume las velocidades comandadas en cada modo.
 
 \begin{table}[H]
   \centering

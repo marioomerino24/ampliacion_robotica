@@ -1,4 +1,4 @@
-# Progreso - Práctica 6: Navegación autónoma
+# Progreso - Práctica 6: Navegación completa
 
 ## Punto de partida
 

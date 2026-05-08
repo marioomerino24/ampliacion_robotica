@@ -9,7 +9,7 @@
 % ===== Documento =====
 \begin{document}
 
-\portada{Lab-MR4}{Planificaci\'{o}n de caminos I}%
+\portada{Lab-MR 4}{Planificaci\'{o}n de caminos I}%
         {Algoritmo de Dijkstra sobre grafo topol\'{o}gico}
 
 \tableofcontents
@@ -108,28 +108,61 @@ Al finalizar, si $d[t] = \infty$ se devuelve \texttt{coste = Inf} y \texttt{ruta
 % =====================================================================
 \section{Resultados experimentales}
 
-\subsection{Datos del enunciado}
-El fichero \texttt{grafos.mat} contiene varias matrices de adyacencia (\texttt{G, H, J, F, E, K}) que representan distintos grafos sobre el mismo conjunto de nodos. Por defecto, la implementaci\'{o}n usa \texttt{J}, que corresponde al grafo del enunciado.
+\subsection{Bloque A: grafo de ejemplo del enunciado (7 nodos)}
+El enunciado plantea como primer caso de validaci\'{o}n el siguiente grafo de $7$ nodos:
 
-\subsection{Ejemplo de ejecuci\'{o}n}
-La invocaci\'{o}n t\'{i}pica desde la l\'{i}nea de comandos de \matlab{} es:
-\begin{center}
-  \texttt{[coste, ruta] = dijkstra(load('grafos.mat'), 1, 7)}
-\end{center}
+\begin{equation*}
+  G = \begin{bmatrix}
+    0 & 2 & 0 & 0 & 9 & 0 & 0 \\
+    2 & 0 & 1 & 2 & 0 & 0 & 0 \\
+    0 & 1 & 0 & 5 & 0 & 0 & 0 \\
+    0 & 2 & 5 & 0 & 1 & 2 & 4 \\
+    9 & 0 & 0 & 1 & 0 & 4 & 0 \\
+    0 & 0 & 0 & 2 & 4 & 0 & 1 \\
+    0 & 0 & 0 & 4 & 0 & 1 & 0
+  \end{bmatrix}
+\end{equation*}
 
-que devuelve el coste m\'{i}nimo y la secuencia de nodos del camino \'{o}ptimo del nodo $1$ al nodo $7$.
+La ejecuci\'{o}n \texttt{[coste, ruta] = dijkstra(G, 1, 7)} devuelve el resultado esperado: \texttt{coste = 7}, \texttt{ruta = [1 2 4 6 7]} (Figura~\ref{fig:dijkstra_ejemplo7}).
 
 \begin{figure}[H]
   \centering
-  \pendiente{Captura del grafo y de la ruta \'{o}ptima resaltada (por ejemplo, ejecuci\'{o}n del nodo 1 al nodo 7).}
-  \caption{Ruta \'{o}ptima calculada por Dijkstra sobre el grafo de \texttt{grafos.mat}.}
-  \label{fig:dijkstra_ruta}
+  \includegraphics[width=0.7\linewidth]{dijkstra_ejemplo7}
+  \caption{Grafo de $7$ nodos del enunciado con la ruta \'{o}ptima del nodo $1$ al nodo $7$ resaltada en rojo. Coste total $7$, ruta $[1\,2\,4\,6\,7]$.}
+  \label{fig:dijkstra_ejemplo7}
 \end{figure}
+
+\subsection{Bloque B: grafos.mat (matriz J, 25 nodos, dirigida y asim\'{e}trica)}
+El segundo bloque de validaci\'{o}n usa la matriz \texttt{J} contenida en \texttt{grafos.mat}, un grafo \textbf{dirigido y asim\'{e}trico} de $25$ nodos. La asimetr\'{i}a es importante: por ejemplo el coste $1 \to 19$ ($16$) no coincide con $19 \to 1$ ($19$) precisamente porque $J(i,j) \neq J(j,i)$ en algunos arcos.
+
+La Tabla~\ref{tab:dijkstra_validacion} resume los $8$ casos del enunciado y compara los resultados obtenidos por la implementaci\'{o}n con los esperados. Todos coinciden.
+
+\begin{table}[H]
+  \centering
+  \caption{Validaci\'{o}n de \texttt{dijkstra} sobre la matriz \texttt{J} de \texttt{grafos.mat} ($25$ nodos, dirigida).}
+  \label{tab:dijkstra_validacion}
+  \begin{tabularx}{0.98\linewidth}{c c c X c}
+    \toprule
+    \textbf{Origen} & \textbf{Destino} & \textbf{Coste} & \textbf{Ruta} & \textbf{Estado} \\
+    \midrule
+    1  & 19 & $16$  & $[1\,7\,13\,17\,23\,18\,19]$                    & $\checkmark$ \\
+    19 & 1  & $19$  & $[19\,20\,15\,10\,5\,9\,8\,3\,2\,1]$            & $\checkmark$ \\
+    25 & 19 & $11$  & $[25\,20\,15\,14\,18\,19]$                       & $\checkmark$ \\
+    19 & 25 & $4$   & $[19\,20\,25]$                                    & $\checkmark$ \\
+    1  & 23 & $12$  & $[1\,7\,13\,17\,23]$                              & $\checkmark$ \\
+    23 & 1  & $22$  & $[23\,18\,14\,15\,10\,5\,9\,8\,3\,2\,1]$         & $\checkmark$ \\
+    1  & 24 & $\infty$ & $[\,]$ (no alcanzable)                         & $\checkmark$ \\
+    23 & 22 & $40$  & $[23\,18\,14\,15\,10\,5\,9\,8\,3\,2\,1\,7\,13\,17\,12\,11\,16\,22]$ & $\checkmark$ \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Obs\'{e}rvese que las rutas de ida y vuelta entre el mismo par de nodos suelen \textbf{no ser sim\'{e}tricas}: por ejemplo $1 \to 23$ pasa por $[1, 7, 13, 17, 23]$ con coste $12$, mientras que $23 \to 1$ recorre $[23, 18, 14, 15, 10, 5, 9, 8, 3, 2, 1]$ con coste $22$. El caso $23 \to 22$ es paradigm\'{a}tico: aunque $22$ y $23$ son nodos pr\'{o}ximos en el mapa, la \'{u}nica forma de alcanzar $22$ desde $23$ pasa por casi todo el grafo (coste $40$, $18$ nodos), porque los arcos disponibles no permiten un atajo directo.
 
 \subsection{Casos l\'{i}mite verificados}
 \begin{itemize}[leftmargin=2em]
   \item \texttt{origen == destino}: devuelve coste $0$ y ruta de un solo nodo.
-  \item Nodos sin camino: devuelve \texttt{coste = Inf}, \texttt{ruta = []}.
+  \item Nodos sin camino (caso $1\to 24$): devuelve \texttt{coste = Inf}, \texttt{ruta = []}.
   \item Pesos negativos: rechazados por las validaciones de entrada con error expl\'{i}cito.
 \end{itemize}
 
@@ -160,6 +193,6 @@ que devuelve el coste m\'{i}nimo y la secuencia de nodos del camino \'{o}ptimo d
 \section{Conclusiones}
 Se ha implementado una versi\'{o}n robusta y autocontenida del algoritmo de Dijkstra adaptada al formato de datos del enunciado. La interfaz acepta tanto matrices como el \texttt{struct} de \texttt{load}, lo que simplifica su uso interactivo en \matlab{}. La funci\'{o}n incorpora las salvaguardas habituales (validaci\'{o}n de pesos, casos l\'{i}mite, corte temprano y manejo de inalcanzabilidad) y proporciona los dos elementos esperados: coste m\'{i}nimo y secuencia de nodos del camino \'{o}ptimo.
 
-Esta funci\'{o}n constituye la base de la planificaci\'{o}n global utilizada despu\'{e}s en Lab-MR5 (variante A* con heur\'{i}stica consistente) y en Lab-MR6 (navegaci\'{o}n aut\'{o}noma completa, donde la ruta de Dijkstra act\'{u}a como secuencia de subobjetivos para la navegaci\'{o}n local reactiva).
+Esta funci\'{o}n constituye la base de la planificaci\'{o}n global utilizada despu\'{e}s en Lab-MR 5 (variante A* con heur\'{i}stica consistente) y en Lab-MR 6 (navegaci\'{o}n aut\'{o}noma completa, donde la ruta de Dijkstra act\'{u}a como secuencia de subobjetivos para la navegaci\'{o}n local reactiva).
 
 \end{document}

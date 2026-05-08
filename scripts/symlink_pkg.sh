@@ -7,7 +7,7 @@
 #   ./scripts/symlink_pkg.sh --remove <ruta_practica>   # Eliminar symlinks
 #
 # Ejemplo:
-#   ./scripts/symlink_pkg.sh robotica_movil/practica_1_seguimiento_de_caminos_explicitos
+#   ./scripts/symlink_pkg.sh robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos
 ###############################################################################
 
 set -euo pipefail
@@ -23,7 +23,7 @@ fi
 
 if [[ -z "${1:-}" ]]; then
     echo "Uso: $0 [--remove] <ruta_practica>"
-    echo "  Ejemplo: $0 robotica_movil/practica_1_seguimiento_de_caminos_explicitos"
+    echo "  Ejemplo: $0 robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos"
     exit 1
 fi
 

@@ -21,7 +21,7 @@ Recordatorios generales:
 ## 1. MR1.1 — Recorrido P2P rectangular
 
 **Archivo:** `p2p_recorrido.png`
-**Carpeta:** `memorias/robotica_movil/lab1_1_caminos_explicitos/figures/`
+**Carpeta:** `memorias/robotica_movil/lab1-I_caminos_explicitos/figures/`
 
 ### Qué debe verse
 - Vista **cenital** de la escena P2P en CoppeliaSim.
@@ -146,7 +146,7 @@ exportgraphics(gcf, 'astar_vs_dijkstra.png', 'Resolution', 200);
 ## 5. MR6 — Caso base de navegación autónoma
 
 **Archivo:** `nav_caso_base.png`
-**Carpeta:** `memorias/robotica_movil/lab6_navegacion_autonoma/figures/`
+**Carpeta:** `memorias/robotica_movil/lab6_navegacion_completa/figures/`
 
 ### Qué debe verse
 - Mapa `mapa2.pgm` de fondo.
@@ -156,7 +156,7 @@ exportgraphics(gcf, 'astar_vs_dijkstra.png', 'Resolution', 200);
 - Caso típico que **alcanza el destino**, por ejemplo nodo 1 → nodo de la zona superior derecha.
 
 ### Cómo obtenerla
-1. MATLAB → `cd robotica_movil/practica_6_navegacion_autonoma/matlab/`.
+1. MATLAB → `cd robotica_movil/practica_6_navegacion_completa/matlab/`.
 2. Ejecutar `navegacion_autonoma_p7.m`.
 3. Cuando pregunte: planificador `Dijkstra` (o `A*`), origen `1`, destino el del enunciado.
 4. Al terminar:
@@ -169,7 +169,7 @@ exportgraphics(gcf, 'astar_vs_dijkstra.png', 'Resolution', 200);
 ## 6. MR6 — Zona conflictiva 24–32
 
 **Archivo:** `nav_zona_24_32.png`
-**Carpeta:** `memorias/robotica_movil/lab6_navegacion_autonoma/figures/`
+**Carpeta:** `memorias/robotica_movil/lab6_navegacion_completa/figures/`
 
 ### Qué debe verse
 **Dos paneles** del mismo origen→destino que atraviese la zona 24–32:

@@ -9,7 +9,7 @@
 % ===== Documento =====
 \begin{document}
 
-\portada{Lab-MR2}{Percepci\'{o}n del entorno}%
+\portada{Lab-MR 2}{Percepci\'{o}n del entorno}%
         {Estimaci\'{o}n de paredes por m\'{i}nimos cuadrados y Pure Pursuit}
 
 \tableofcontents
@@ -32,7 +32,7 @@ El robot \pioneer{} navega por un pasillo cerrado con un l\'{a}ser 2D. El proble
   \item \textbf{Aplicar} Pure Pursuit sobre ese punto objetivo para mantener el robot centrado.
 \end{enumerate}
 
-La ventaja respecto al enfoque de la pr\'{a}ctica anterior (Lab-MR1.2) es que el modelo de recta integra \textbf{todas las lecturas} de un sector angular amplio, lo que reduce el efecto del ruido y proporciona informaci\'{o}n de orientaci\'{o}n sin necesidad de heur\'{i}sticas adicionales.
+La ventaja respecto al enfoque de la pr\'{a}ctica anterior (Lab-MR 1-II) es que el modelo de recta integra \textbf{todas las lecturas} de un sector angular amplio, lo que reduce el efecto del ruido y proporciona informaci\'{o}n de orientaci\'{o}n sin necesidad de heur\'{i}sticas adicionales.
 
 
 % =====================================================================
@@ -166,7 +166,7 @@ La Figura~\ref{fig:regresion_pp} ilustra el proceso completo: a partir de los pu
 \section{Dise\~{n}o e implementaci\'{o}n}
 
 \subsection{Arquitectura del sistema}
-La arquitectura es id\'{e}ntica a la de Lab-MR1.2: un \'{u}nico nodo \texttt{corr\_nav\_node} que se suscribe a los topics de l\'{a}ser y odometr\'{i}a y publica \texttt{cmd\_vel}. El Cuadro~\ref{tab:nodos} resume los elementos.
+La arquitectura es id\'{e}ntica a la de Lab-MR 1-II: un \'{u}nico nodo \texttt{corr\_nav\_node} que se suscribe a los topics de l\'{a}ser y odometr\'{i}a y publica \texttt{cmd\_vel}. La Tabla~\ref{tab:nodos} resume los elementos.
 
 \begin{table}[H]
   \centering
@@ -204,7 +204,7 @@ El flujo de control en cada iteraci\'{o}n es:
 La cl\'{a}usula de guarda (paso 3a) es importante: cuando el robot pierde visibilidad de una pared (e.g., en una curva o cruce), los valores de $b$ se disparan a infinito y el control generar\'{i}a comandos err\'{a}ticos. Detener el robot en esta situaci\'{o}n es la opci\'{o}n m\'{a}s segura.
 
 \subsection{Parametrizaci\'{o}n}
-Los par\'{a}metros son los mismos que en Lab-MR1.2, cargados desde \texttt{corr\_params.yaml}. El Cuadro~\ref{tab:parametros} los resume.
+Los par\'{a}metros son los mismos que en Lab-MR 1-II, cargados desde \texttt{corr\_params.yaml}. La Tabla~\ref{tab:parametros} los resume.
 
 \begin{table}[H]
   \centering
@@ -240,23 +240,23 @@ El controlador se ha evaluado en los mismos mundos de \coppelia{} que la pr\'{a}
 
 \begin{table}[H]
   \centering
-  \caption{Comparativa de resultados entre Lab-MR1.2 y Lab-MR2.}
+  \caption{Comparativa de resultados entre Lab-MR 1-II y Lab-MR 2.}
   \label{tab:comparativa}
   \begin{tabularx}{0.98\linewidth}{l c c X}
     \toprule
-    \textbf{Aspecto} & \textbf{Lab-MR1.2} & \textbf{Lab-MR2} & \textbf{Observaci\'{o}n} \\
+    \textbf{Aspecto} & \textbf{Lab-MR 1-II} & \textbf{Lab-MR 2} & \textbf{Observaci\'{o}n} \\
     \midrule
     Centrado en recto        & $\checkmark$ & $\checkmark$ & Ambos mantienen error $< \pm\SI{0.1}{\meter}$. \\
     Robustez frente a ruido  & Media     & Alta      & La regresi\'{o}n promedia m\'{a}s puntos. \\
     Estimaci\'{o}n de $\theta$ & Heur\'{i}stica & Pendiente $m$ & Directa y sin comparaci\'{o}n de lecturas. \\
-    Detecci\'{o}n de curvas    & $-45^\circ$ & No impl. & Lab-MR2 se detiene si pierde una pared. \\
+    Detecci\'{o}n de curvas    & $-45^\circ$ & No impl. & Lab-MR 2 se detiene si pierde una pared. \\
     Velocidad de crucero     & \SI{0.25}{\meter\per\second} & \SI{0.50}{\meter\per\second} & Mayor velocidad gracias a mejor estimaci\'{o}n. \\
     \bottomrule
   \end{tabularx}
 \end{table}
 
 \subsection{An\'{a}lisis cualitativo}
-En tramos rectos, el comportamiento es m\'{a}s suave que en Lab-MR1.2: la recta ajustada integra todas las lecturas de un sector de $60^\circ$, lo que filtra el ruido de medidas individuales. La orientaci\'{o}n del robot se obtiene directamente de la pendiente $m$ de las paredes, sin necesidad de la heur\'{i}stica de comparaci\'{o}n de lecturas a $\pm 15^\circ$.
+En tramos rectos, el comportamiento es m\'{a}s suave que en Lab-MR 1-II: la recta ajustada integra todas las lecturas de un sector de $60^\circ$, lo que filtra el ruido de medidas individuales. La orientaci\'{o}n del robot se obtiene directamente de la pendiente $m$ de las paredes, sin necesidad de la heur\'{i}stica de comparaci\'{o}n de lecturas a $\pm 15^\circ$.
 
 La velocidad de crucero se ha podido incrementar a \SI{0.50}{\meter\per\second} (50\% de $v_\text{max}$) gracias a la mayor estabilidad del estimador, frente a los \SI{0.25}{\meter\per\second} de la versi\'{o}n anterior.
 
@@ -284,7 +284,7 @@ Con rangos angulares amplios ($30^\circ$--$150^\circ$) los puntos de las esquina
 Cuando la pared es aproximadamente perpendicular al eje $x$ del robot, el denominador de la regresi\'{o}n tiende a cero. \textbf{Soluci\'{o}n}: si $|n\sum x_i^2 - (\sum x_i)^2| < 10^{-9}$, se asigna $m = 0$ y $b = \bar{y}$, lo que equivale a modelar la pared como horizontal (caso degenerado seguro).
 
 \paragraph{Problema 3: p\'{e}rdida de pared en curvas.}
-Al no implementar un modo de curva dedicado, cuando el robot entra en una curva pierde visibilidad de una pared y el control se detiene. \textbf{Soluci\'{o}n parcial}: la cl\'{a}usula de guarda (\texttt{isfinite(b\_left) \&\& isfinite(b\_right)}) evita comandos err\'{a}ticos. La soluci\'{o}n completa requerir\'{i}a integrar el modo curva de Lab-MR1.2.
+Al no implementar un modo de curva dedicado, cuando el robot entra en una curva pierde visibilidad de una pared y el control se detiene. \textbf{Soluci\'{o}n parcial}: la cl\'{a}usula de guarda (\texttt{isfinite(b\_left) \&\& isfinite(b\_right)}) evita comandos err\'{a}ticos. La soluci\'{o}n completa requerir\'{i}a integrar el modo curva de Lab-MR 1-II.
 
 \subsection{Limitaciones}
 \begin{itemize}[leftmargin=2em]
@@ -299,7 +299,7 @@ Al no implementar un modo de curva dedicado, cuando el robot entra en una curva 
 %  6. CONCLUSIONES
 % =====================================================================
 \section{Conclusiones}
-Se ha implementado un controlador de seguimiento de pasillo que sustituye las lecturas puntuales del l\'{a}ser por un \textbf{modelo geom\'{e}trico de paredes} obtenido por regresi\'{o}n lineal. Las mejoras respecto a Lab-MR1.2 son:
+Se ha implementado un controlador de seguimiento de pasillo que sustituye las lecturas puntuales del l\'{a}ser por un \textbf{modelo geom\'{e}trico de paredes} obtenido por regresi\'{o}n lineal. Las mejoras respecto a Lab-MR 1-II son:
 
 \begin{enumerate}[leftmargin=2em]
   \item \textbf{Mayor robustez al ruido}: la regresi\'{o}n integra decenas de puntos l\'{a}ser por pared, frente a las ventanas de $\pm 1^\circ$ de la versi\'{o}n anterior.
@@ -308,6 +308,6 @@ Se ha implementado un controlador de seguimiento de pasillo que sustituye las le
   \item \textbf{Mayor velocidad de crucero}: la estabilidad del estimador permite operar a \SI{0.50}{\meter\per\second} frente a \SI{0.25}{\meter\per\second}.
 \end{enumerate}
 
-La limitaci\'{o}n principal es la ausencia de un modo de curva, que impide la navegaci\'{o}n completa del pasillo. Como trabajo futuro se propone combinar este estimador con el modo curva de Lab-MR1.2, utilizar la pendiente de las paredes como predictor de curvas, y explorar modelos no lineales para pasillos curvos.
+La limitaci\'{o}n principal es la ausencia de un modo de curva, que impide la navegaci\'{o}n completa del pasillo. Como trabajo futuro se propone combinar este estimador con el modo curva de Lab-MR 1-II, utilizar la pendiente de las paredes como predictor de curvas, y explorar modelos no lineales para pasillos curvos.
 
 \end{document}

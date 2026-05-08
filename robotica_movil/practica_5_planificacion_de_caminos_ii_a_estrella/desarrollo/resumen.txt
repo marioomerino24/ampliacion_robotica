@@ -1,4 +1,4 @@
-Practica 6 preparada.
+Lab-MR 5 (A*) preparada.
 
 - Enunciado copiado desde robotica_movil/inputs/
 - Pendiente: implementacion de A* en MATLAB

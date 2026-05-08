@@ -1,5 +1,5 @@
 % AMPLIACION DE ROBOTICA
-% PRACTICA 7: Navegacion autonoma
+% LAB-MR 6: Navegacion completa
 % Integracion de navegacion global (Dijkstra / A*) con navegacion local
 % reactiva por campos potenciales.
 
@@ -20,7 +20,10 @@ end
 
 img = imread(f_mapa);
 map_bin = imbinarize(imcomplement(img));
-mapa = binaryOccupancyMap(map_bin);
+% flipud: image rows grow downward, but binaryOccupancyMap world-y grows upward.
+% Node coordinates in mapa2.m use image-row convention, so we flip the matrix
+% so that world y ≈ image row (both increase in the same direction).
+mapa = binaryOccupancyMap(flipud(map_bin));
 
 run(f_grafo); % Espera: nodos y costes
 
@@ -46,7 +49,7 @@ if size(C, 2) ~= n || size(XY, 1) ~= n
 end
 
 %% 1) Entradas de usuario
-fprintf('\n===== PRACTICA 7: NAVEGACION AUTONOMA =====\n');
+fprintf('\n===== LAB-MR 6: NAVEGACION COMPLETA =====\n');
 
 id_recomendado_origen = 1;
 id_recomendado_destino = node_ids(argmax(XY(:,1) + XY(:,2))); % zona superior-derecha
@@ -66,6 +69,11 @@ end
 id_destino = input(sprintf('Nodo destino (defecto %d): ', id_recomendado_destino));
 if isempty(id_destino)
     id_destino = id_recomendado_destino;
+end
+
+usar_mejora = input('Usar mejora anti-minimos locales [1=Si, 0=No] (defecto 1): ');
+if isempty(usar_mejora)
+    usar_mejora = 1;
 end
 
 idx_origen = find(node_ids == id_origen, 1);
@@ -105,22 +113,28 @@ fprintf('Ruta (IDs): %s\n\n', mat2str(ruta_ids'));
 
 %% 3) Navegacion local sobre subobjetivos (campos potenciales)
 params = struct();
-params.v = 0.45;                  % avance lineal por iteracion
-params.D = 6.5;                   % rango de influencia repulsiva
-params.alfa = 1.4;                % peso atraccion
-params.beta = 200;                % peso repulsion
-params.gamma_tan = 0.45;          % peso campo tangencial (mejora anti-minimos)
+params.v = 0.7;                   % avance lineal por iteracion
+params.D = 4.0;                   % rango de influencia repulsiva
+params.alfa = 2.0;                % peso atraccion
+params.beta = 0.3;                % peso repulsion — reducido para corridores estrechos
+params.gamma_tan = 1.0;           % peso campo tangencial (mejora anti-minimos)
+if ~usar_mejora
+    params.gamma_tan = 0;         % desactiva campo tangencial
+end
 params.max_rango = 12;            % rango lidar simulado
-params.angulos = -pi/2:(pi/180):pi/2;
-params.goal_tol = 0.75;           % tolerancia de llegada a subobjetivo
-params.max_iter_seg = 1200;
+params.angulos = -pi:(pi/180):pi; % 360° — evita oscilacion por lidar unilateral
+params.goal_tol = 1.5;            % tolerancia de llegada a subobjetivo
+params.max_iter_seg = 5000;
 params.min_force = 1e-3;
-params.progress_window = 40;
-params.min_progress = 0.40;       % progreso minimo en ventana
-params.max_stuck_events = 4;
-params.escape_step = 1.00;        % longitud del paso de escape
-params.max_escape_trials = 16;
-params.collision_margin = 0.60;   % radio de seguridad para colision
+params.progress_window = 100;     % ventana amplia: captura centering + avance en corredor
+params.min_progress = -1.0;       % permite algo de retroceso (centering en corredor estrecho)
+params.max_stuck_events = 8;
+if ~usar_mejora
+    params.max_stuck_events = inf;   % desactiva maniobra de escape por estancamiento
+end
+params.escape_step = 0.8;         % longitud del paso de escape
+params.max_escape_trials = 24;
+params.collision_margin = 0.35;   % radio de seguridad para colision
 
 robot = [XY(idx_origen, 1), XY(idx_origen, 2), 0];
 trayectoria = robot;
@@ -142,7 +156,7 @@ for k = 2:numel(ruta_idx)
 end
 
 %% 4) Visualizacion y resultado
-figure('Name', 'Practica 7 - Navegacion autonoma');
+figure('Name', 'Lab-MR 6 - Navegacion completa');
 show(mapa);
 hold on;
 axis equal;
@@ -167,13 +181,26 @@ legend([h_nodes, h_global, h_local, h_origen, h_destino], ...
        {'Nodos', 'Ruta global', 'Trayectoria local', 'Origen', 'Destino'}, ...
        'Location', 'bestoutside');
 
+if usar_mejora
+    sufijo_mejora = 'con mejora';
+else
+    sufijo_mejora = 'sin mejora';
+end
 if ~fallo
     fprintf('Resultado: destino alcanzado.\n');
-    title(sprintf('Destino alcanzado con %s', nombre_planificador));
+    title(sprintf('Destino alcanzado (%s, %s)', nombre_planificador, sufijo_mejora));
 else
     fprintf('Resultado: no se ha podido llegar al destino.\n');
-    title(sprintf('Fallo local con %s', nombre_planificador));
+    title(sprintf('Fallo local (%s, %s)', nombre_planificador, sufijo_mejora));
 end
+
+% Exportacion automatica con nombre descriptivo
+nombre_plan_corto = lower(strtok(nombre_planificador));
+sufijo_archivo = strrep(sufijo_mejora, ' ', '_');
+fichero_salida = sprintf('nav_%s_%d_a_%d_%s.jpg', ...
+                          nombre_plan_corto, id_origen, id_destino, sufijo_archivo);
+exportgraphics(gcf, fichero_salida, 'Resolution', 200);
+fprintf('Figura exportada: %s\n', fichero_salida);
 
 fprintf('\n--- Log por tramo ---\n');
 for i = 1:numel(seg_log)
@@ -323,7 +350,7 @@ function [robot_out, ok] = maniobra_escape(robot, subgoal, mapa, p)
         end
 
         clearance = estimar_clearance(cand, mapa, p);
-        score = 0.7 * clearance - 0.3 * norm(subgoal - cand(1:2));
+        score = 0.4 * clearance - 0.6 * norm(subgoal - cand(1:2));
 
         if score > best_score
             best_score = score;
