@@ -1,0 +1,91 @@
+\documentclass[12pt]{report}
+
+% ===== Configuración común (misma profundidad que los labs) =====
+\newcommand{\commonpath}{../../common}
+\input{\commonpath/preamble}
+\input{\commonpath/commands}
+
+% ===== Formato de capítulos al estilo de la asignatura =====
+\titleformat{\chapter}[block]
+  {\Large\bfseries\color{UMABlue}}
+  {\thechapter.\ }{0.4em}{}
+\titlespacing*{\chapter}{0pt}{2ex plus .5ex minus .2ex}{1.8ex plus .2ex}
+
+% ===== Documento =====
+\begin{document}
+
+\portada{Memoria Conjunta}{Rob\'{o}tica M\'{o}vil}%
+        {Labs 1-I, 1-II, 2, 3, 4, 5 y 6}
+
+\tableofcontents
+\clearpage
+
+
+% =====================================================================
+%  CAPÍTULO 1 — Lab-MR 1-I
+% =====================================================================
+\chapter{Lab-MR 1-I: Seguimiento de caminos expl\'{i}citos}
+\graphicspath{{../lab1-I_caminos_explicitos/figures/}{\commonpath/img/}}
+\input{../lab1-I_caminos_explicitos/content}
+
+\clearpage
+
+
+% =====================================================================
+%  CAPÍTULO 2 — Lab-MR 1-II
+% =====================================================================
+\chapter{Lab-MR 1-II: Seguimiento de caminos impl\'{i}citos}
+\graphicspath{{../lab1-II_caminos_implicitos/figures/}{\commonpath/img/}}
+\input{../lab1-II_caminos_implicitos/content}
+
+\clearpage
+
+
+% =====================================================================
+%  CAPÍTULO 3 — Lab-MR 2
+% =====================================================================
+\chapter{Lab-MR 2: Percepci\'{o}n del entorno}
+\graphicspath{{../lab2_percepcion/figures/}{\commonpath/img/}}
+\input{../lab2_percepcion/content}
+
+\clearpage
+
+
+% =====================================================================
+%  CAPÍTULO 4 — Lab-MR 3
+% =====================================================================
+\chapter{Lab-MR 3: Evitar obst\'{a}culos mediante campos potenciales}
+\graphicspath{{../lab3_campos_potenciales/figures/}{\commonpath/img/}}
+\input{../lab3_campos_potenciales/content}
+
+\clearpage
+
+
+% =====================================================================
+%  CAPÍTULO 5 — Lab-MR 4
+% =====================================================================
+\chapter{Lab-MR 4: Planificaci\'{o}n de caminos I (Dijkstra)}
+\graphicspath{{../lab4_dijkstra/figures/}{\commonpath/img/}}
+\input{../lab4_dijkstra/content}
+
+\clearpage
+
+
+% =====================================================================
+%  CAPÍTULO 6 — Lab-MR 5
+% =====================================================================
+\chapter{Lab-MR 5: Planificaci\'{o}n de caminos II (A*)}
+\graphicspath{{../lab5_a_estrella/figures/}{\commonpath/img/}}
+\input{../lab5_a_estrella/content}
+
+\clearpage
+
+
+% =====================================================================
+%  CAPÍTULO 7 — Lab-MR 6
+% =====================================================================
+\chapter{Lab-MR 6: Navegaci\'{o}n completa}
+\graphicspath{{../lab6_navegacion_completa/figures/}{\commonpath/img/}}
+\input{../lab6_navegacion_completa/content}
+
+\end{document}
