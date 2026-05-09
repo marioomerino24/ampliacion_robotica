@@ -28,7 +28,7 @@ Completar el m\'{e}todo \texttt{controlLoop()} del nodo \texttt{nav\_p2p.cpp} (p
 % =====================================================================
 \section{Implementaci\'{o}n}
 
-El nodo \texttt{nav\_p2p\_node} ya proporcionado en \texttt{seg\_tray} se encarga de cargar los waypoints del YAML, suscribirse a \texttt{/PioneerP3DX/odom} y publicar en \texttt{/PioneerP3DX/cmd\_vel} a 40~Hz. Lo \'{u}nico que hay que completar es el bloque indicado dentro de \texttt{controlLoop()} con las ecuaciones del enunciado. Las decisiones no obvias son:
+El nodo \texttt{nav\_p2p\_node} ya proporcionado en \texttt{seg\_tray} se encarga de cargar los waypoints del YAML, leer la odometr\'{i}a y publicar comandos de velocidad a 40~Hz. Lo \'{u}nico que hay que completar es el bloque indicado dentro de \texttt{controlLoop()} con las ecuaciones del enunciado. Las decisiones no obvias son:
 
 \paragraph{Cambio a coordenadas locales del veh\'{i}culo.} El error de orientaci\'{o}n $\phi_e$ se obtiene m\'{a}s directamente expresando el waypoint en el sistema de referencia del robot. Aplicando la rotaci\'{o}n del enunciado:
 \begin{equation*}
@@ -44,7 +44,11 @@ queda $\phi_e = \operatorname{atan2}(y_{P_l},\, x_{P_l})$, que ya est\'{a} en el
 \end{equation*}
 A partir de $(\omega_i, \omega_d)$ se recuperan las velocidades del veh\'{i}culo $(v, \omega)$ con la cinem\'{a}tica directa y se publican en \texttt{cmd\_vel}.
 
-\paragraph{Cambio de waypoint a $\SI{1}{\meter}$.} El waypoint se considera alcanzado cuando $\sqrt{(x_P - x)^2 + (y_P - y)^2} < \SI{1}{\meter}$, tal y como indica el enunciado, y se pasa al siguiente. Cuando no quedan waypoints, se publica $v = \omega = 0$.
+\paragraph{Cambio de waypoint a $\SI{1}{\meter}$.} El waypoint se considera alcanzado cuando la distancia eucl\'{i}dea al punto objetivo es inferior a $\SI{1}{\meter}$:
+\begin{equation*}
+  \sqrt{(x_P - x)^2 + (y_P - y)^2} < \SI{1}{\meter},
+\end{equation*}
+tal y como indica el enunciado, y se pasa al siguiente. Cuando no quedan waypoints, se publica $v = \omega = 0$.
 
 
 % =====================================================================
