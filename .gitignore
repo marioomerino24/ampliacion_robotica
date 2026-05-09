@@ -41,5 +41,15 @@ venv/
 # === Dependencias externas (repos clonados) ===
 manipuladores/practica_1_planificacion_de_trayectorias_cartesianas/ros2_ws/cartesian_trajectory_planning/
 
-# === Symlinks creados por symlink_pkg.sh ===
-# (no ignorar: queremos trackear que existen)
+# === Herramientas internas (no van a la entrega) ===
+CAPTURAS_PENDIENTES.md
+ENTREGA_ROBOTICA_MOVIL.md
+IMAGENES_MEMORIAS.md
+PROGRESO.md
+**/PROGRESO.md
+scripts/
+.templates/
+**/desarrollo/resumen.txt
+**/enunciado/enunciado.txt
+**/inputs/evaluacion_*.md
+*.html
