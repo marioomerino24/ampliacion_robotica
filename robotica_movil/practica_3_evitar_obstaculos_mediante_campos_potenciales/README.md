@@ -1,23 +1,26 @@
 # Práctica 3: Evitar obstáculos mediante campos potenciales
 
+**Tecnología:** MATLAB
+
 ## Objetivo
 
-[Descripcion breve del objetivo de la practica]
+Implementar navegación local reactiva mediante campos potenciales artificiales. Se combina un campo atractivo hacia el destino y un campo repulsivo generado por los obstáculos detectados con un sensor láser simulado, obteniendo una velocidad de navegación resultante en cada instante.
 
-## Archivos MATLAB
+## Estructura
 
-| Archivo | Descripcion |
-|---------|-------------|
-| `matlab/plantilla_campos_potenciales.m` | Plantilla base para la implementacion |
-| `matlab/mapa1_150.png` | Mapa del entorno |
+```
+practica_3_evitar_obstaculos_mediante_campos_potenciales/
+├── matlab/
+│   ├── plantilla_campos_potenciales.m   # Implementación principal
+│   └── mapa1_150.png                    # Mapa de ocupación del entorno
+└── enunciado/                           # Enunciado oficial de la práctica
+```
 
-## Ejecucion
+## Ejecución
 
 ```matlab
-% Abrir MATLAB y ejecutar desde el directorio matlab/
+% Desde el directorio matlab/
 run('plantilla_campos_potenciales.m')
 ```
 
-## Notas
-
-[Observaciones relevantes]
+Al ejecutar, el script muestra el mapa y solicita al usuario que seleccione con el ratón el punto de inicio y el punto destino. La simulación arranca automáticamente.

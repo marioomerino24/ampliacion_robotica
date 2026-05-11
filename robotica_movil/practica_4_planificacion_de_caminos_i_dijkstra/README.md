@@ -1,25 +1,29 @@
-# Práctica 4: Planificación de Caminos I (Dijkstra)
+# Práctica 4: Planificación de caminos I — Dijkstra
+
+**Tecnología:** MATLAB
 
 ## Objetivo
 
-[Descripcion breve del objetivo de la practica]
+Implementar el algoritmo de Dijkstra para calcular la ruta de coste mínimo en un grafo topológico dirigido y ponderado. La función admite cualquier grafo representado como matriz de costes NxN.
 
-## Archivos de la práctica
+## Estructura
 
-| Archivo | Descripcion |
-|---------|-------------|
-| `enunciado/Practica5_2024-25.pdf` | Enunciado oficial de la práctica 5 |
-| `matlab/dijkstra.m` | Implementación del algoritmo de Dijkstra |
-| `matlab/grafos.mat` | Datos de ejemplo para probar el algoritmo |
-
-## Ejecución (MATLAB)
-
-```matlab
-datos = load('grafos.mat');
-[coste, ruta] = dijkstra(datos, 1, 7)
+```
+practica_4_planificacion_de_caminos_i_dijkstra/
+├── matlab/
+│   ├── dijkstra.m     # Implementación del algoritmo de Dijkstra
+│   └── grafos.mat     # Grafos de ejemplo para validación
+└── enunciado/         # Enunciado oficial de la práctica
 ```
 
-## Notas
+## Ejecución
 
-- `dijkstra.m` acepta directamente el `struct` devuelto por `load(...)`.
-- La carpeta `scenes/` y `ros2_ws/` queda disponible por si se añaden materiales complementarios.
+```matlab
+% Cargar los grafos de ejemplo
+datos = load('grafos.mat');
+
+% Calcular ruta óptima (origen → destino)
+[coste, ruta] = dijkstra(datos, origen, destino)
+```
+
+`dijkstra.m` acepta directamente el `struct` devuelto por `load(...)`. El archivo `grafos.mat` contiene varias matrices de ejemplo (`G`, `H`, `J`, ...) con el convenio `0 = sin arco`.

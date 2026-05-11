@@ -1,34 +1,43 @@
 # Práctica 1-I: Seguimiento de caminos explícitos
 
+**Tecnología:** ROS 2 Humble / C++ / CoppeliaSim  
+**Paquete ROS 2:** `seg_tray` — nodo `nav_p2p`
+
 ## Objetivo
 
-[Descripcion breve del objetivo de la practica]
+Implementar un controlador de navegación punto a punto para un robot Pioneer P3DX. El robot recorre una secuencia de waypoints predefinidos usando control proporcional sobre el ángulo de orientación.
 
-## Escenas CoppeliaSim
+## Estructura
 
-| Archivo | Descripcion |
-|---------|-------------|
-| `scenes/` | [Descripcion de la escena] |
-
-## Paquetes ROS2
-
-| Paquete | Descripcion |
-|---------|-------------|
-| `ros2_ws/` | [Descripcion del paquete] |
-
-## Ejecucion
-
-```bash
-# 1. Enlazar paquetes al workspace (desde la raiz del repo)
-./scripts/symlink_pkg.sh robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos
-
-# 2. Compilar
-cd ~/colcon_ws && colcon build --symlink-install && source install/setup.bash
-
-# 3. Lanzar
-ros2 launch <paquete> <launch_file>
+```
+practica_1-I_seguimiento_de_caminos_explicitos/
+├── ros2_ws/seg_tray/
+│   ├── src/nav_p2p.cpp          # Nodo principal de navegación
+│   ├── config/nav_params.yaml   # Waypoints y parámetros del controlador
+│   ├── launch/nav_p2p_launch.py # Launch file
+│   └── scenes/p2p_scene.ttt     # Escena CoppeliaSim
+└── enunciado/                   # Enunciado oficial de la práctica
 ```
 
-## Notas
+## Parámetros principales (`nav_params.yaml`)
 
-[Observaciones relevantes]
+| Parámetro | Valor | Descripción |
+|-----------|-------|-------------|
+| `control_gain` | 1.0 | Ganancia proporcional del controlador angular |
+| `max_linear_speed` | 1.2 m/s | Velocidad lineal máxima |
+| `num_waypoints` | 7 | Número de waypoints en la trayectoria |
+
+## Ejecución
+
+```bash
+# 1. Compilar el workspace
+cd ~/colcon_ws
+colcon build --symlink-install
+source install/setup.bash
+
+# 2. Abrir la escena en CoppeliaSim
+#    scenes/p2p_scene.ttt
+
+# 3. Lanzar el nodo
+ros2 launch seg_tray nav_p2p_launch.py
+```

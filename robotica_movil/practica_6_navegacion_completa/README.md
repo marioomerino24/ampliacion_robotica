@@ -1,28 +1,30 @@
 # Práctica 6: Navegación completa
 
+**Tecnología:** MATLAB
+
 ## Objetivo
 
-Integrar navegacion global (planificacion de caminos en grafo) y navegacion local reactiva (campos potenciales) para que el robot recorra trayectorias largas evitando obstaculos.
+Integrar planificación global de caminos (Dijkstra / A*) y navegación local reactiva (campos potenciales) para que el robot recorra trayectorias largas en un mapa real evitando obstáculos. Se incluye una mejora anti-mínimos locales con campo tangencial y maniobra de escape.
 
-## Archivos de la practica
+## Estructura
 
-| Archivo | Descripcion |
-|---------|-------------|
-| `enunciado/Practica7_2024-2025.pdf` | Enunciado oficial (Lab-MR 6 — Navegación completa) |
-| `matlab/navegacion_autonoma_p7.m` | Script principal completo (Dijkstra/A* + campos potenciales + mejora anti-minimos locales) |
-| `matlab/dijkstra.m` | Planificacion global por Dijkstra |
-| `matlab/astar.m` | Alternativa A* con heuristica consistente |
-| `matlab/datos/` | Carpeta con `mapa2.pgm` y `mapa2.m`, ya incorporados desde `robotica_movil/inputs/` |
+```
+practica_6_navegacion_completa/
+├── matlab/
+│   ├── navegacion_autonoma_p7.m   # Script principal (planificación + navegación local)
+│   ├── dijkstra.m                 # Planificador global Dijkstra
+│   ├── astar.m                    # Planificador global A*
+│   └── datos/
+│       ├── mapa2.pgm              # Mapa de ocupación del entorno
+│       └── mapa2.m                # Grafo topológico (nodos y arcos)
+└── enunciado/                     # Enunciado oficial de la práctica
+```
 
-## Ejecucion (MATLAB)
+## Ejecución
 
 ```matlab
-cd('matlab')
+cd matlab
 run('navegacion_autonoma_p7.m')
 ```
 
-## Notas
-
-1. El script pregunta planificador (`Dijkstra` o `A*`) y nodos de inicio/destino.
-2. Para `A*`, se usa una matriz de costes euclidea consistente construida a partir de la adyacencia original.
-3. La navegacion local incorpora dos mejoras para el caso conflictivo (24-32): campo tangencial y maniobra de escape por estancamiento.
+El script solicita el planificador (`Dijkstra` o `A*`) y los nodos de inicio y destino. Genera automáticamente figuras con los resultados sin y con la mejora anti-mínimos locales.

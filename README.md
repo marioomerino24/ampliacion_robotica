@@ -1,120 +1,65 @@
-# Ampliacion de Robotica
+# Ampliación de Robótica — Prácticas
 
-Repositorio de practicas de la asignatura **Ampliacion de Robotica**.
-
-Entorno: ROS2 Humble + CoppeliaSim (Docker)
-
-**Autores:** Saul Gutierrez Rodriguez, Pablo Haro Garcia, Mario Merino Prado
+**Asignatura:** Ampliación de Robótica  
+**Titulación:** Ingeniería Informática — Universidad de Málaga  
+**Autores:** Saúl Gutiérrez Rodríguez, Pablo Haro García, Mario Merino Prado  
+**Entorno:** ROS 2 Humble + CoppeliaSim (Docker) / MATLAB
 
 ---
 
-## Estructura
+## Contenido
+
+Este repositorio recoge el código fuente y la memoria de las prácticas de **Robótica Móvil** de la asignatura.
 
 ```
 ampliacion_robotica/
-├── robotica_movil/          # Codigo fuente de practicas de Robotica Movil
-├── manipuladores/           # Codigo fuente de practicas de Manipuladores
-├── memorias/                # Memorias LaTeX de todas las practicas
-│   ├── common/              # Preamble, comandos y assets compartidos
-│   ├── robotica_movil/      # Una carpeta por practica con main.tex + figures/
-│   └── Makefile             # Compilacion y subida a Google Drive
-├── scripts/                 # Scripts auxiliares
-└── .templates/              # Plantillas base
+├── robotica_movil/          # Código fuente de las 6 prácticas
+│   ├── practica_1-I_*       # Seguimiento de caminos explícitos  (ROS 2)
+│   ├── practica_1-II_*      # Seguimiento de caminos implícitos  (ROS 2)
+│   ├── practica_2_*         # Percepción del entorno             (ROS 2)
+│   ├── practica_3_*         # Campos potenciales                 (MATLAB)
+│   ├── practica_4_*         # Planificación Dijkstra             (MATLAB)
+│   ├── practica_5_*         # Planificación A*                   (MATLAB)
+│   └── practica_6_*         # Navegación completa                (MATLAB)
+└── memorias/
+    └── robotica_movil/
+        └── memoria_robotica_movil/   # Memoria conjunta (LaTeX + PDF)
 ```
 
 ---
 
-## Memorias (PDFs)
+## Memoria
 
-Las memorias de cada practica estan disponibles como PDF compilado dentro del repositorio:
+La memoria conjunta de todas las prácticas está disponible en:
 
-### Robotica Movil
-
-| Práctica | Titulo | PDF | Video | Estado |
-|-----|--------|-----|-------|--------|
-| Práctica 1-I | Seguimiento de caminos explícitos | [`main.pdf`](memorias/robotica_movil/lab1-I_caminos_explicitos/main.pdf) | [Drive](https://drive.google.com/drive/folders/1ne8Xvr6KsiIRRmqDgXzSwK89ENE5QpWu?usp=drive_link) | Completada |
-| Práctica 1-II | Seguimiento de caminos implícitos | [`main.pdf`](memorias/robotica_movil/lab1-II_caminos_implicitos/main.pdf) | [Drive](https://drive.google.com/file/d/1I6tOLcURG61m_-ohzUyiiBDkwep3uvLk/view) | Completada |
-| Práctica 2 | Percepción del entorno | [`main.pdf`](memorias/robotica_movil/lab2_percepcion/main.pdf) | [Drive](https://drive.google.com/file/d/1FnFhbGMeaFnEXlVtZfJK5_TjgRE5hLpe/view) | Completada |
-| Práctica 3 | Evitar obstáculos mediante campos potenciales | [`main.pdf`](memorias/robotica_movil/lab3_campos_potenciales/main.pdf) | - | Esqueleto |
-| Práctica 6 | Navegación completa | [`main.pdf`](memorias/robotica_movil/lab6_navegacion_completa/main.pdf) | - | Esqueleto |
-
-### Manipuladores
-
-| Lab | Titulo | PDF | Video | Estado |
-|-----|--------|-----|-------|--------|
-| - | - | - | - | - |
+[`memorias/robotica_movil/memoria_robotica_movil/main.pdf`](memorias/robotica_movil/memoria_robotica_movil/main.pdf)
 
 ---
 
-## Codigo fuente
+## Prácticas
 
-### Robotica Movil
-
-| Práctica | Paquete ROS2 | Nodo principal | Descripcion |
-|-----|-------------|----------------|-------------|
-| Práctica 1-I | `seg_tray` | `nav_p2p` | Navegacion punto a punto con control proporcional |
-| Práctica 1-II | `seg_tray` | `corr_nav` | Corridor-following con Pure Pursuit y LiDAR |
-| Práctica 2 | `seg_tray` | `corr_nav_wall` | Estimacion de paredes por minimos cuadrados |
-| Práctica 3 | - | MATLAB script | Campos potenciales artificiales |
-| Práctica 4 | - | `dijkstra.m` | Planificacion global en grafos mediante Dijkstra |
-| Práctica 5 | - | - | Carpeta preparada con el enunciado oficial de A* |
-| Práctica 6 | - | MATLAB script | Integracion de Dijkstra/A* con campos potenciales |
+| Práctica | Título | Tecnología |
+|----------|--------|-----------|
+| 1-I | [Seguimiento de caminos explícitos](robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos/) | ROS 2 / C++ |
+| 1-II | [Seguimiento de caminos implícitos](robotica_movil/practica_1-II_seguimiento_de_caminos_implicitos/) | ROS 2 / C++ |
+| 2 | [Percepción del entorno](robotica_movil/practica_2_percepcion_del_entorno/) | ROS 2 / C++ |
+| 3 | [Campos potenciales](robotica_movil/practica_3_evitar_obstaculos_mediante_campos_potenciales/) | MATLAB |
+| 4 | [Planificación de caminos I — Dijkstra](robotica_movil/practica_4_planificacion_de_caminos_i_dijkstra/) | MATLAB |
+| 5 | [Planificación de caminos II — A\*](robotica_movil/practica_5_planificacion_de_caminos_ii_a_estrella/) | MATLAB |
+| 6 | [Navegación completa](robotica_movil/practica_6_navegacion_completa/) | MATLAB |
 
 ---
 
-## Uso rapido
-
-### Compilar memorias
-
-Requiere `latexmk` y `pdflatex` instalados.
+## Ejecución rápida (prácticas ROS 2)
 
 ```bash
-cd memorias
-
-# Compilar todas las memorias
-make all
-
-# Compilar una practica concreta
-make lab1-I     # Práctica 1-I (caminos explícitos)
-make lab1-II    # Práctica 1-II (caminos implícitos)
-make lab2       # Práctica 2
-make lab3       # Práctica 3
-make lab6       # Práctica 6
-
-# Subir PDFs a Google Drive (requiere rclone configurado)
-make upload
-
-# Limpiar artefactos de compilacion
-make clean
-```
-
-### Enlazar paquetes ROS2 al workspace
-
-```bash
-# Enlazar todos los paquetes de una practica
-./scripts/symlink_pkg.sh robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos
-
-# Desenlazar
-./scripts/symlink_pkg.sh --remove robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos
-```
-
-### Compilar codigo ROS2 dentro del contenedor
-
-```bash
+# 1. Compilar el workspace
 cd ~/colcon_ws
 colcon build --symlink-install
 source install/setup.bash
-```
 
-### Ejecutar una practica
-
-```bash
-# Práctica 1-I: navegacion punto a punto
-ros2 launch seg_tray nav_p2p_launch.py
-
-# Práctica 1-II: corridor following
-ros2 launch seg_tray corr_nav_launch.py
-
-# Práctica 2: corridor following con estimacion de paredes
-ros2 launch seg_tray corr_nav_wall_launch.py
+# 2. Lanzar la práctica deseada
+ros2 launch seg_tray nav_p2p_launch.py       # Práctica 1-I
+ros2 launch seg_tray corr_nav_launch.py      # Práctica 1-II
+ros2 launch seg_tray corr_nav_wall_launch.py # Práctica 2
 ```

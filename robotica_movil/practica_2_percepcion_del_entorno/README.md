@@ -1,40 +1,42 @@
 # Práctica 2: Percepción del entorno
 
+**Tecnología:** ROS 2 Humble / C++ / CoppeliaSim  
+**Paquete ROS 2:** `seg_tray` — nodo `corr_nav_wall`
+
 ## Objetivo
 
-Extraer informacion del entorno util para la tarea a partir de datos del laser de barrido.
-Se estiman las paredes del pasillo mediante regresion lineal por minimos cuadrados (least squares fitting)
-y se usan para calcular los errores de seguimiento de trayectoria.
+Extraer información geométrica del entorno a partir del LiDAR de barrido. Se estiman las paredes del pasillo mediante regresión lineal por mínimos cuadrados y se usan los parámetros de la recta ajustada como señales de error para el controlador de seguimiento.
 
-## Escenas CoppeliaSim
+## Estructura
 
-| Archivo | Descripcion |
-|---------|-------------|
-| `ros2_ws/seg_tray/scenes/corridor_scene.ttt` | Escena del pasillo con robot Pioneer P3DX |
-| `ros2_ws/seg_tray/scenes/p2p_scene.ttt` | Escena punto a punto |
-
-## Paquetes ROS2
-
-| Paquete | Descripcion |
-|---------|-------------|
-| `ros2_ws/seg_tray` | Nodo de seguimiento de pasillo con percepcion por paredes (`corr_nav_wall`) |
-
-## Ejecucion
-
-```bash
-# 1. Enlazar paquetes al workspace (desde la raiz del repo)
-./scripts/symlink_pkg.sh robotica_movil/practica_2_percepcion_del_entorno
-
-# 2. Compilar
-cd ~/colcon_ws && colcon build --symlink-install && source install/setup.bash
-
-# 3. Lanzar
-ros2 launch seg_tray corr_nav_wall_launch.py
+```
+practica_2_percepcion_del_entorno/
+├── ros2_ws/seg_tray/
+│   ├── src/corr_nav_wall.cpp         # Nodo principal con estimación de paredes
+│   ├── src/corr_nav.cpp              # Nodo auxiliar (heredado de práctica 1-II)
+│   ├── config/corr_params.yaml       # Parámetros del controlador
+│   ├── launch/corr_nav_wall_launch.py
+│   └── scenes/corridor_scene.ttt
+└── enunciado/                        # Enunciado oficial de la práctica
 ```
 
-## Notas
+## Aspectos clave de la implementación
 
-- El sensor laser publica en `/PioneerP3DX/laser_scan`
-- La funcion `extractWall()` reemplaza a `averageRangeInWindow()` de la practica anterior
-- Se eliminó el servicio de la practica anterior (no necesario aqui)
-- Archivo de configuracion reutilizado de la practica anterior: `config/corr_params.yaml`
+- `extractWall()` sustituye a `averageRangeInWindow()` de la práctica anterior.
+- El LiDAR publica en `/PioneerP3DX/laser_scan`.
+- El error lateral se calcula a partir de la distancia del robot a la recta ajustada.
+
+## Ejecución
+
+```bash
+# 1. Compilar el workspace
+cd ~/colcon_ws
+colcon build --symlink-install
+source install/setup.bash
+
+# 2. Abrir la escena en CoppeliaSim
+#    scenes/corridor_scene.ttt
+
+# 3. Lanzar el nodo
+ros2 launch seg_tray corr_nav_wall_launch.py
+```

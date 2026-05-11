@@ -1,26 +1,26 @@
-# Práctica 5: Planificación de Caminos II (A*)
+# Práctica 5: Planificación de caminos II — A*
+
+**Tecnología:** MATLAB
 
 ## Objetivo
 
-Implementar el algoritmo A* para calcular rutas óptimas sobre un mapa topológico, incorporando una heurística consistente que reduzca el coste computacional de la búsqueda.
+Implementar el algoritmo A* sobre un grafo topológico con heurística externa, consiguiendo rutas óptimas con menor coste computacional que Dijkstra gracias a la guía de la heurística admisible.
 
-## Archivos de la práctica
+## Estructura
 
-| Archivo | Descripcion |
-|---------|-------------|
-| `enunciado/Práctica6_2024-2025.pdf` | Enunciado oficial de la práctica 6 |
-| `matlab/` | Carpeta preparada para la implementación en MATLAB |
-| `desarrollo/` | Material de apoyo, notas o borradores de la práctica |
-| `scenes/` | Recursos adicionales de simulación, si hicieran falta |
-| `ros2_ws/` | Espacio reservado por si la práctica acaba integrándose con ROS 2 |
-
-## Ejecución (MATLAB)
-
-```matlab
-% Implementacion pendiente
+```
+practica_5_planificacion_de_caminos_ii_a_estrella/
+├── matlab/
+│   └── aestrella.m    # Implementación del algoritmo A*
+└── enunciado/         # Enunciado oficial de la práctica
 ```
 
-## Notas
+## Ejecución
 
-- La carpeta se ha preparado a partir del material localizado en `robotica_movil/inputs/`.
-- El nombre del directorio sigue la convención normalizada en minúsculas.
+```matlab
+% G: matriz NxN de costes del grafo
+% H: matriz NxN de heurísticas (estimación de coste restante)
+[coste, ruta] = aestrella(G, H, origen, destino)
+```
+
+La heurística `H` debe ser admisible (no sobreestimar el coste real) para garantizar optimalidad. La función devuelve `coste = Inf` y `ruta = []` si no existe camino entre los nodos indicados.
