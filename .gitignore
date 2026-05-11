@@ -41,6 +41,17 @@ venv/
 # === Dependencias externas (repos clonados) ===
 manipuladores/practica_1_planificacion_de_trayectorias_cartesianas/ros2_ws/cartesian_trajectory_planning/
 
+# === No van a la entrega ===
+manipuladores/
+robotica_movil/inputs/
+memorias/robotica_movil/lab1-I_caminos_explicitos/
+memorias/robotica_movil/lab1-II_caminos_implicitos/
+memorias/robotica_movil/lab2_percepcion/
+memorias/robotica_movil/lab3_campos_potenciales/
+memorias/robotica_movil/lab4_dijkstra/
+memorias/robotica_movil/lab5_a_estrella/
+memorias/robotica_movil/lab6_navegacion_completa/
+
 # === Herramientas internas (no van a la entrega) ===
 CAPTURAS_PENDIENTES.md
 ENTREGA_ROBOTICA_MOVIL.md
