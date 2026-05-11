@@ -38,15 +38,15 @@ La memoria conjunta de todas las prácticas está disponible en:
 
 ## Prácticas
 
-| Práctica | Título | Tecnología |
-|----------|--------|-----------|
-| 1-I | [Seguimiento de caminos explícitos](robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos/) | ROS 2 / C++ |
-| 1-II | [Seguimiento de caminos implícitos](robotica_movil/practica_1-II_seguimiento_de_caminos_implicitos/) | ROS 2 / C++ |
-| 2 | [Percepción del entorno](robotica_movil/practica_2_percepcion_del_entorno/) | ROS 2 / C++ |
-| 3 | [Campos potenciales](robotica_movil/practica_3_evitar_obstaculos_mediante_campos_potenciales/) | MATLAB |
-| 4 | [Planificación de caminos I — Dijkstra](robotica_movil/practica_4_planificacion_de_caminos_i_dijkstra/) | MATLAB |
-| 5 | [Planificación de caminos II — A\*](robotica_movil/practica_5_planificacion_de_caminos_ii_a_estrella/) | MATLAB |
-| 6 | [Navegación completa](robotica_movil/practica_6_navegacion_completa/) | MATLAB |
+| Práctica | Título | Tecnología | Vídeo |
+|----------|--------|-----------|-------|
+| 1-I | [Seguimiento de caminos explícitos](robotica_movil/practica_1-I_seguimiento_de_caminos_explicitos/) | ROS 2 / C++ | [k=0.4](https://drive.google.com/open?id=1jx27vzaXh6YFGnaX7vWsmnyP7AP53o-K) · [k=1](https://drive.google.com/open?id=1B6tw3tVGNyEisCtlUp-mjeOcuXBJ7G0e) · [k=3](https://drive.google.com/open?id=1_hRtz4IdVE7N9oPTdO6M9ZgvfZ3rZJ2l) |
+| 1-II | [Seguimiento de caminos implícitos](robotica_movil/practica_1-II_seguimiento_de_caminos_implicitos/) | ROS 2 / C++ | [Ver](https://drive.google.com/open?id=1I6tOLcURG61m_-ohzUyiiBDkwep3uvLk) |
+| 2 | [Percepción del entorno](robotica_movil/practica_2_percepcion_del_entorno/) | ROS 2 / C++ | [Ver](https://drive.google.com/open?id=1FnFhbGMeaFnEXlVtZfJK5_TjgRE5hLpe) |
+| 3 | [Campos potenciales](robotica_movil/practica_3_evitar_obstaculos_mediante_campos_potenciales/) | MATLAB | — |
+| 4 | [Planificación de caminos I — Dijkstra](robotica_movil/practica_4_planificacion_de_caminos_i_dijkstra/) | MATLAB | — |
+| 5 | [Planificación de caminos II — A\*](robotica_movil/practica_5_planificacion_de_caminos_ii_a_estrella/) | MATLAB | — |
+| 6 | [Navegación completa](robotica_movil/practica_6_navegacion_completa/) | MATLAB | — |
 
 ---
 

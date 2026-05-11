@@ -27,6 +27,10 @@ practica_1-II_seguimiento_de_caminos_implicitos/
 | `look_ahead_distance` | 4.0 m | Distancia de anticipación (Pure Pursuit) |
 | `max_linear_speed` | 1.0 m/s | Velocidad lineal máxima |
 
+## Vídeo de demostración
+
+[Ver en Drive](https://drive.google.com/open?id=1I6tOLcURG61m_-ohzUyiiBDkwep3uvLk)
+
 ## Ejecución
 
 ```bash

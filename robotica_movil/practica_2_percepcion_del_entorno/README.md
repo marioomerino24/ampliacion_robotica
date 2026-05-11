@@ -20,6 +20,10 @@ practica_2_percepcion_del_entorno/
 └── enunciado/                        # Enunciado oficial de la práctica
 ```
 
+## Vídeo de demostración
+
+[Ver en Drive](https://drive.google.com/open?id=1FnFhbGMeaFnEXlVtZfJK5_TjgRE5hLpe)
+
 ## Aspectos clave de la implementación
 
 - `extractWall()` sustituye a `averageRangeInWindow()` de la práctica anterior.

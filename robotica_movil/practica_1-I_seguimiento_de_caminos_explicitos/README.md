@@ -27,6 +27,14 @@ practica_1-I_seguimiento_de_caminos_explicitos/
 | `max_linear_speed` | 1.2 m/s | Velocidad lineal máxima |
 | `num_waypoints` | 7 | Número de waypoints en la trayectoria |
 
+## Vídeos de demostración
+
+| Ganancia | Enlace |
+|----------|--------|
+| k = 0.4 | [Ver en Drive](https://drive.google.com/open?id=1jx27vzaXh6YFGnaX7vWsmnyP7AP53o-K) |
+| k = 1.0 | [Ver en Drive](https://drive.google.com/open?id=1B6tw3tVGNyEisCtlUp-mjeOcuXBJ7G0e) |
+| k = 3.0 | [Ver en Drive](https://drive.google.com/open?id=1_hRtz4IdVE7N9oPTdO6M9ZgvfZ3rZJ2l) |
+
 ## Ejecución
 
 ```bash
