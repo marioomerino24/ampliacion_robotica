@@ -1,9 +1,9 @@
 # Ampliación de Robótica — Prácticas
 
 **Asignatura:** Ampliación de Robótica  
-**Titulación:** Ingeniería Informática — Universidad de Málaga  
+**Titulación:** Grado en Ingeniería Electrónica, Robótica y Mecatrónica — Universidad de Málaga  
 **Autores:** Saúl Gutiérrez Rodríguez, Pablo Haro García, Mario Merino Prado  
-**Entorno:** ROS 2 Humble + CoppeliaSim (Docker) / MATLAB
+**Entorno:** ROS 2 Humble + CoppeliaSim + MATLAB
 
 ---
 
